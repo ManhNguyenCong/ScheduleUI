@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group
+        android:id="@+id/mainMenu"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/dayScheduleListFragment"
+            android:checkable="true"
+            android:icon="@drawable/baseline_menu_book_24"
+            android:title="@string/TKB" />
+        <item
+            android:id="@+id/jobScheduleListFragment"
+            android:checkable="true"
+            android:icon="@drawable/baseline_calendar_month_24"
+            android:title="@string/LCV" />
+        <item
+            android:id="@+id/notificationFragment"
+            android:checkable="true"
+            android:icon="@drawable/baseline_notifications_24"
+            android:title="@string/TB" />
+    </group>
+
+    <group
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/settingFragment"
+            android:checkable="true"
+            android:icon="@drawable/baseline_settings_24"
+            android:title="@string/TL" />
+    </group>
+</menu>

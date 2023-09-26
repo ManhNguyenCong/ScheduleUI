@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/dayScheduleListFragment">
+
+    <fragment
+        android:id="@+id/dayScheduleListFragment"
+        android:name="com.example.scheduleui.ui.dayschedule.fragment.DayScheduleListFragment"
+        android:label="Thời khóa biểu"
+        tools:layout="@layout/fragment_day_schedule_list">
+        <action
+            android:id="@+id/action_dayScheduleListFragment_to_addDayScheduleFragment"
+            app:destination="@id/addDayScheduleFragment" />
+        <action
+            android:id="@+id/action_dayScheduleListFragment_to_detailDayScheduleFragment"
+            app:destination="@id/detailDayScheduleFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addDayScheduleFragment"
+        android:name="com.example.scheduleui.ui.dayschedule.fragment.AddDayScheduleFragment"
+        android:label=""
+        tools:layout="@layout/fragment_add_day_schedule">
+        <argument
+            android:name="subjectId"
+            android:defaultValue="-1"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_addDayScheduleFragment_to_dayScheduleListFragment"
+            app:destination="@id/dayScheduleListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.example.scheduleui.ui.setting.SettingFragment"
+        android:label="Thời khóa biểu"
+        tools:layout="@layout/fragment_setting" />
+    <fragment
+        android:id="@+id/jobScheduleListFragment"
+        android:name="com.example.scheduleui.ui.jobschedulescreen.fragment.JobScheduleListFragment"
+        android:label="Lịch công việc"
+        tools:layout="@layout/fragment_job_schedule_list">
+        <action
+            android:id="@+id/action_jobScheduleListFragment_to_addJobScheduleFragment"
+            app:destination="@id/addJobScheduleFragment" />
+        <action
+            android:id="@+id/action_jobScheduleListFragment_to_detailJobScheduleFragment"
+            app:destination="@id/detailJobScheduleFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.example.scheduleui.ui.notification.fragment.NotificationFragment"
+        android:label="Thông báo"
+        tools:layout="@layout/fragment_notification" >
+        <action
+            android:id="@+id/action_notificationFragment_to_addNotificationFragment"
+            app:destination="@id/addNotificationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailDayScheduleFragment"
+        android:name="com.example.scheduleui.ui.dayschedule.fragment.DetailDayScheduleFragment"
+        android:label=""
+        tools:layout="@layout/fragment_detail_day_schedule">
+        <argument
+            android:name="subjectId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_detailDayScheduleFragment_to_addDayScheduleFragment"
+            app:destination="@id/addDayScheduleFragment" />
+        <action
+            android:id="@+id/action_detailDayScheduleFragment_to_dayScheduleListFragment"
+            app:destination="@id/dayScheduleListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addNotificationFragment"
+        android:name="com.example.scheduleui.ui.notification.fragment.AddNotificationFragment"
+        android:label=""
+        tools:layout="@layout/fragment_add_notification" >
+        <action
+            android:id="@+id/action_addNotificationFragment_to_notificationFragment"
+            app:destination="@id/notificationFragment" />
+
+        <argument
+            android:name="notificationId"
+            app:argType="integer"
+            android:defaultValue="-1"/>
+    </fragment>
+    <fragment
+        android:id="@+id/addJobScheduleFragment"
+        android:name="com.example.scheduleui.ui.jobschedulescreen.fragment.AddJobScheduleFragment"
+        android:label=""
+        tools:layout="@layout/fragment_add_job_schedule" >
+        <action
+            android:id="@+id/action_addJobScheduleFragment_to_jobScheduleListFragment"
+            app:destination="@id/jobScheduleListFragment" />
+        <argument
+            android:name="dayScheduleId"
+            android:defaultValue="-1"
+            app:argType="integer"/>
+        <argument
+            android:name="jobScheduleId"
+            app:argType="integer"
+            android:defaultValue="-1"/>
+    </fragment>
+    <fragment
+        android:id="@+id/detailJobScheduleFragment"
+        android:name="com.example.scheduleui.ui.jobschedulescreen.fragment.DetailJobScheduleFragment"
+        android:label=""
+        tools:layout="@layout/fragment_detail_job_schedule" >
+        <action
+            android:id="@+id/action_detailJobScheduleFragment_to_jobScheduleListFragment"
+            app:destination="@id/jobScheduleListFragment" />
+        <argument
+            android:name="jobScheduleId"
+            app:argType="integer"/>
+        <action
+            android:id="@+id/action_detailJobScheduleFragment_to_addJobScheduleFragment"
+            app:destination="@id/addJobScheduleFragment" />
+    </fragment>
+</navigation>
