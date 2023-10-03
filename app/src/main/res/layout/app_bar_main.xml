@@ -16,7 +16,7 @@
             style="@style/Toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:menu="@menu/day_schedule_fragment_menu" />
+            app:menu="@menu/detail_fragment_menu" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <include

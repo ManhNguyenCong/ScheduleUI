@@ -4,28 +4,37 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import com.example.scheduleui.R
+import com.example.scheduleui.data.ScheduleApplication
 import com.example.scheduleui.data.Subject
 import com.example.scheduleui.databinding.FragmentDetailDayScheduleBinding
-import com.example.scheduleui.findNavControllerSafely
-import com.example.scheduleui.ui.viewmodel.ScheduleViewModel
-import com.example.scheduleui.ui.viewmodel.ScheduleViewModelFactory
+import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModel
+import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModelFactory
+import com.example.scheduleui.util.findNavControllerSafely
+import com.example.scheduleui.util.formatDayScheduleDate
+import com.example.scheduleui.util.formatDayScheduleTime
 
 class DetailDayScheduleFragment : Fragment() {
 
+    // Arguments of DetailDatScheduleFragment in nav_graph
     private val args: DetailDayScheduleFragmentArgs by navArgs()
 
+    // Binding to fragment_detail_day_schedule
     private lateinit var binding: FragmentDetailDayScheduleBinding
 
-    private val viewModel: ScheduleViewModel by activityViewModels {
-        ScheduleViewModelFactory()
+    // DayScheduleViewModel
+    private val viewModel: DayScheduleViewModel by activityViewModels {
+        DayScheduleViewModelFactory(
+            (activity?.application as ScheduleApplication).database.scheduleDao()
+        )
     }
+
+    // Subject
+    private lateinit var subject: Subject
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,9 +52,11 @@ class DetailDayScheduleFragment : Fragment() {
 
         // Setup toolbar
         setupToolbar()
-
-        // Load subject information
-        loadSubjectInfor(viewModel.getSubjectById(subjectId = args.subjectId)!!)
+        // Get and load subject information
+        viewModel.getSubjectById(args.subjectId).observe(this.viewLifecycleOwner) {
+            subject = it
+            loadSubjectInfor(subject)
+        }
     }
 
     /**
@@ -58,28 +69,23 @@ class DetailDayScheduleFragment : Fragment() {
         // Clean old menu
         toolbar.menu.clear()
         // Inflate new menu layout
-        toolbar.inflateMenu(R.menu.day_schedule_fragment_menu)
-        // Repair menu item
-        toolbar.menu.removeItem(R.id.goToMenuItem)
-        toolbar.menu.removeItem(R.id.addRemindMenuItem)
-        toolbar.menu.findItem(R.id.refreshMenuItem).title = "Xóa"
-        toolbar.menu.findItem(R.id.comeBackMenuItem).icon =
-            ResourcesCompat.getDrawable(resources, R.drawable.baseline_edit_24, null)
-        //set onclick for menu item
+        toolbar.inflateMenu(R.menu.detail_fragment_menu)
+        // Set onclick for menu item
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.refreshMenuItem -> {
-                    //todo xóa subject
-                    viewModel.deleteSubject(args.subjectId)
+                R.id.deleteObjectMenuItem -> {
+                    // Delete subject
+                    deleteSubject(subject)
+                    // Navigate to dayScheduleListFragment
                     val action =
                         DetailDayScheduleFragmentDirections.actionDetailDayScheduleFragmentToDayScheduleListFragment()
                     findNavControllerSafely()?.navigate(action)
-                    Toast.makeText(context, "Delete subject", Toast.LENGTH_SHORT).show()
+
                     true
                 }
 
-                R.id.comeBackMenuItem -> {
-                    //todo chuyển hướng đến edit fragment
+                R.id.editObjectMenuItem -> {
+                    // Navigate to AddDayScheduleFragment
                     val action =
                         DetailDayScheduleFragmentDirections.actionDetailDayScheduleFragmentToAddDayScheduleFragment(
                             subjectId = args.subjectId
@@ -96,33 +102,45 @@ class DetailDayScheduleFragment : Fragment() {
     /**
      * This function is used to load subject information
      *
-     * @param subject
      */
     private fun loadSubjectInfor(subject: Subject) {
+        // Set name subject
         binding.name.text = subject.name
-        binding.time.text = String.format(
-            "%s - %s\n%s",
-            subject.timeStart,
-            subject.timeEnd,
-            viewModel.getDayScheduleById(subject.dayScheduleId)?.day ?: ""
-        )
-
+        // Set day, time start and time end
+        viewModel.daySchedules.observe(this.viewLifecycleOwner) { daySchedules ->
+            binding.time.text = String.format(
+                "%s - %s\n%s",
+                subject.timeStart.formatDayScheduleTime(),
+                subject.timeEnd.formatDayScheduleTime(),
+                daySchedules.find { it.id == subject.dayScheduleId }?.day?.formatDayScheduleDate()
+            )
+        }
+        // Set location if it isn't empty
         if (subject.location.isEmpty()) {
             binding.location.visibility = View.GONE
         } else {
             binding.location.text = subject.location
         }
-
+        // Set teacher if it isn't empty
         if (subject.teacher.isEmpty()) {
             binding.teacher.visibility = View.GONE
         } else {
             binding.teacher.text = subject.teacher
         }
-
+        // Set notes if it isn't empty
         if (subject.notes.isEmpty()) {
             binding.notes.visibility = View.GONE
         } else {
             binding.notes.text = subject.notes
         }
+    }
+
+    /**
+     * This function is used to delete a subject
+     *
+     * @param subject
+     */
+    private fun deleteSubject(subject: Subject) {
+        viewModel.deleteSubject(subject)
     }
 }

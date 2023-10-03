@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import com.example.scheduleui.R
 import com.example.scheduleui.databinding.FragmentAddNotificationBinding
-import com.example.scheduleui.findNavControllerSafely
+import com.example.scheduleui.util.findNavControllerSafely
 
 class AddNotificationFragment : Fragment() {
 
@@ -50,7 +50,7 @@ class AddNotificationFragment : Fragment() {
         // Clear old menu
         toolbar.menu.clear()
         // Inflate new menu layout
-        toolbar.inflateMenu(R.menu.add_day_schedule_menu)
+        toolbar.inflateMenu(R.menu.add_fragment_menu)
         // Set onClick for menu item
         toolbar.setOnMenuItemClickListener { menuItem ->
             if (menuItem.itemId == R.id.saveMenuItem) {

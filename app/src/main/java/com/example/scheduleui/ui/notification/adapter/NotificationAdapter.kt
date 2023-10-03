@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
-import com.example.scheduleui.databinding.NotificationItemBinding
 import com.example.scheduleui.data.Notification
+import com.example.scheduleui.databinding.NotificationItemBinding
 
 class NotificationAdapter(private val showPopupMenu: (View, Int) -> Unit): ListAdapter<Notification, NotificationAdapter.NotificationViewHolder>(
     DiffCallback
@@ -22,7 +22,7 @@ class NotificationAdapter(private val showPopupMenu: (View, Int) -> Unit): ListA
                 showPopupMenu(binding.popupMenu, notification.id)
             }
 
-            binding.time.text = notification.time
+//            binding.time.text = notification.time
             binding.notes.text = notification.notes
         }
     }

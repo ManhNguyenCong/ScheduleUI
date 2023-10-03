@@ -1,86 +1,103 @@
 package com.example.scheduleui.ui.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.scheduleui.data.DaySchedule
 import com.example.scheduleui.data.JobSchedule
 import com.example.scheduleui.data.Notification
+import com.example.scheduleui.data.ScheduleDao
 import com.example.scheduleui.data.Subject
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class ScheduleViewModel() : ViewModel() {
+class ScheduleViewModel(private val scheduleDao: ScheduleDao) : ViewModel() {
 
-    val daySchedules = mutableListOf<DaySchedule>(
-        DaySchedule(0, "Thứ bảy, 16/09/2023"),
-        DaySchedule(1, "Chủ nhật, 17/09/2023"),
-        DaySchedule(2, "Thứ hai, 18/09/2023"),
-        DaySchedule(3, "Thứ ba, 19/09/2023"),
-        DaySchedule(4, "Thứ tư, 20/09/2023"),
-        DaySchedule(5, "Thứ năm, 21/09/2023"),
-        DaySchedule(6, "Thứ sáu, 22/09/2023")
-    )
+//    val daySchedules = mutableListOf<DaySchedule>(
+//        DaySchedule(0, "Thứ bảy, 16/09/2023"),
+//        DaySchedule(1, "Chủ nhật, 17/09/2023"),
+//        DaySchedule(2, "Thứ hai, 18/09/2023"),
+//        DaySchedule(3, "Thứ ba, 19/09/2023"),
+//        DaySchedule(4, "Thứ tư, 20/09/2023"),
+//        DaySchedule(5, "Thứ năm, 21/09/2023"),
+//        DaySchedule(6, "Thứ sáu, 22/09/2023")
+//    )
+//
+//    val subjects = mutableListOf<Subject>(
+//        Subject(0, "Toán rời rạc", "7:00", "9:40", "901A9", "Teacher A", "", "", 0),
+//        Subject(1, "Nhập môn lập trình", "9:30", "12:00", "801A1", "Teacher B", "", "", 0),
+//        Subject(2, "Toán rời rạc", "7:00", "9:40", "901A1", "Teacher A", "", "", 3),
+//        Subject(3, "Bóng chuyền", "7:00", "8:40", "A6", "Teacher C", "", "", 2),
+//        Subject(4, "Nhập môn lập trình", "9:30", "12:00", "801A1", "Teacher B", "", "", 3),
+//        Subject(
+//            5,
+//            "Tiếng anh Công nghệ thông tin cơ bản 1",
+//            "7:00",
+//            "8:40",
+//            "901A1",
+//            "Teacher D",
+//            "",
+//            "",
+//            5
+//        ),
+//        Subject(
+//            6,
+//            "Tiếng anh Công nghệ thông tin cơ bản 1",
+//            "7:00",
+//            "8:40",
+//            "901A1",
+//            "Teacher D",
+//            "",
+//            "",
+//            6
+//        )
+//    )
+//
+//    val notifications = mutableListOf<Notification>(
+//        Notification(0, "Đi học", "Mang laptop", "Sat, 09/16/2023, 7:00"),
+//        Notification(1, "Nắp mạng", "", "Mon, 11/16/2023, 7:00"),
+//        Notification(2, "Đi ngủ", "Ngủ đi, chơi ít thôi", "00:00 - Hằng ngày")
+//    )
+//
+//    val jobs = mutableListOf<JobSchedule>(
+//        JobSchedule(0, "Job A", "00:00 - 05:00", "Location...", "Notes...", 3)
+//    )
 
-    val subjects = mutableListOf<Subject>(
-        Subject(0, "Toán rời rạc", "7:00", "9:40", "901A9", "Teacher A", "", "", 0),
-        Subject(1, "Nhập môn lập trình", "9:30", "12:00", "801A1", "Teacher B", "", "", 0),
-        Subject(2, "Toán rời rạc", "7:00", "9:40", "901A1", "Teacher A", "", "", 3),
-        Subject(3, "Bóng chuyền", "7:00", "8:40", "A6", "Teacher C", "", "", 2),
-        Subject(4, "Nhập môn lập trình", "9:30", "12:00", "801A1", "Teacher B", "", "", 3),
-        Subject(
-            5,
-            "Tiếng anh Công nghệ thông tin cơ bản 1",
-            "7:00",
-            "8:40",
-            "901A1",
-            "Teacher D",
-            "",
-            "",
-            5
-        ),
-        Subject(
-            6,
-            "Tiếng anh Công nghệ thông tin cơ bản 1",
-            "7:00",
-            "8:40",
-            "901A1",
-            "Teacher D",
-            "",
-            "",
-            6
-        )
-    )
+    val daySchedules = scheduleDao.getAllDaySchedule().asLiveData()
+    val subjects = scheduleDao.getAllSubjects().asLiveData()
 
-    val notifications = mutableListOf<Notification>(
-        Notification(0, "Đi học", "Mang laptop", "Sat, 09/16/2023, 7:00"),
-        Notification(1, "Nắp mạng", "", "Mon, 11/16/2023, 7:00"),
-        Notification(2, "Đi ngủ", "Ngủ đi, chơi ít thôi", "00:00 - Hằng ngày")
-    )
-
-    val jobs = mutableListOf<JobSchedule>(
-        JobSchedule(0, "Job A", "00:00 - 05:00", "Location...", "Notes...", 3)
-    )
-
-    /**
-     * This fun is used to get a subject by id
-     *
-     * @param subjectId
-     */
-    fun getSubjectById(subjectId: Int): Subject? {
-        return subjects.find { subject -> subject.id == subjectId }
-    }
+    val jobs = mutableListOf<JobSchedule>()
+    val notifications = mutableListOf<Notification>()
 
     /**
      * This fun is used to get a day schedule by id
      *
      * @param dayScheduleId
      */
-    fun getDayScheduleById(dayScheduleId: Int): DaySchedule? {
-        return daySchedules.find { daySchedule -> daySchedule.id == dayScheduleId }
+    fun getDayScheduleById(dayScheduleId: Int): LiveData<DaySchedule> {
+        return scheduleDao.getDayScheduleById(dayScheduleId).asLiveData()
+    }
+
+    /**
+     * This fun is used to get a subject by id
+     *
+     * @param subjectId
+     */
+    fun getSubjectById(subjectId: Int): LiveData<Subject> {
+        return scheduleDao.getSubjectById(subjectId).asLiveData()
     }
 
     // Insert
+    /**
+     * This function is used to insert subject to local database
+     * @param subject
+     */
     fun insertSubject(subject: Subject) {
-        subjects.add(subject)
+        viewModelScope.launch {
+            scheduleDao.insertSubject(subject)
+        }
     }
 
     // Update
@@ -90,11 +107,7 @@ class ScheduleViewModel() : ViewModel() {
      * This function is used to delete a subject with subject id
      */
     fun deleteSubject(subjectId: Int) {
-        var index = 0
-        while (index < subjects.size && subjects[index].id != subjectId) {
-            index++
-        }
-        subjects.removeAt(index)
+        // Todo delete subject
     }
 
     /**
@@ -129,7 +142,7 @@ class ScheduleViewModel() : ViewModel() {
      * @param timeEnd
      */
     fun validTimeEntry(timeStart: Calendar, timeEnd: Calendar): Boolean {
-        return timeStart.timeInMillis <= timeEnd.timeInMillis
+        return timeStart <= timeEnd
     }
 
     /**
@@ -140,7 +153,7 @@ class ScheduleViewModel() : ViewModel() {
      * @param dayEnd
      */
     fun validDateEntry(dayStart: Calendar, dayEnd: Calendar): Boolean {
-        return dayStart.timeInMillis <= dayEnd.timeInMillis
+        return dayStart <= dayEnd
     }
 
     /**
@@ -218,11 +231,11 @@ class ScheduleViewModel() : ViewModel() {
     }
 }
 
-class ScheduleViewModelFactory : ViewModelProvider.Factory {
+class ScheduleViewModelFactory(private val scheduleDao: ScheduleDao) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ScheduleViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ScheduleViewModel() as T
+            return ScheduleViewModel(scheduleDao) as T
         }
         return super.create(modelClass)
     }

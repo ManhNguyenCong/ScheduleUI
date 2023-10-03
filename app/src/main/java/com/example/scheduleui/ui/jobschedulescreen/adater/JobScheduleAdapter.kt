@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
-import com.example.scheduleui.databinding.JobScheduleItemBinding
 import com.example.scheduleui.data.DaySchedule
 import com.example.scheduleui.data.JobSchedule
+import com.example.scheduleui.databinding.JobScheduleItemBinding
 
 class JobScheduleAdapter(
     private val context: Context,
@@ -32,7 +32,7 @@ class JobScheduleAdapter(
             showDetailJob: (Int) -> Unit
         ) {
 
-            binding.Day.text = daySchedule.day
+//            binding.Day.text = daySchedule.day
             binding.popupMenu.setOnClickListener {
                 showPopupMenu(binding.popupMenu, daySchedule.id)
             }

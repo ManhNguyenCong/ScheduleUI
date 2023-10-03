@@ -3,10 +3,8 @@ package com.example.scheduleui
 import android.os.Bundle
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -49,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.day_schedule_fragment_menu, menu)
+        menuInflater.inflate(R.menu.list_fragment_menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -58,17 +56,5 @@ class MainActivity : AppCompatActivity() {
      */
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-}
-
-/**
- * This function is used to findNavController safer :)))
- *
- */
-fun Fragment.findNavControllerSafely(): NavController? {
-    return try {
-        findNavController()
-    } catch (e: IllegalStateException) {
-        null
     }
 }

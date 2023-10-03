@@ -1,22 +1,39 @@
 package com.example.scheduleui.ui.dayschedule.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.data.Subject
 import com.example.scheduleui.databinding.SubjectItemBinding
+import com.example.scheduleui.util.formatDayScheduleTime
 
 class SubjectAdapter(private val detailSubject: (Int) -> Unit) :
     ListAdapter<Subject, SubjectAdapter.SubjectViewHolder>(DiffCallback) {
     class SubjectViewHolder(private val binding: SubjectItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
+        /**
+         * This function is used to bind data for SubjectItem
+         */
         fun bind(subject: Subject) {
+            // Set subject name
             binding.name.text = subject.name
-            binding.timeStart.text = subject.timeStart
-            binding.location.text = subject.location
-            binding.teacher.text = subject.teacher
+            // Set time start
+            binding.timeStart.text = subject.timeStart.formatDayScheduleTime()
+            // Check subject location
+            if(subject.location.isEmpty()) {
+                binding.location.visibility = View.GONE
+            } else {
+                binding.location.text = subject.location
+            }
+            // Check subject teacher
+            if(subject.teacher.isEmpty()) {
+                binding.teacher.visibility = View.GONE
+            } else {
+                binding.teacher.text = subject.teacher
+            }
         }
     }
 

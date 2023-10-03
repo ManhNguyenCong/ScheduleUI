@@ -1,8 +1,8 @@
 package com.example.scheduleui
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-
-import org.junit.Assert.*
+import java.util.Calendar
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -12,6 +12,7 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        val calendar = Calendar.getInstance()
+        assertEquals(1, calendar.get(Calendar.DAY_OF_WEEK))
     }
 }

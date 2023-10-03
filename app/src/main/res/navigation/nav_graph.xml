@@ -26,6 +26,10 @@
             android:name="subjectId"
             android:defaultValue="-1"
             app:argType="integer" />
+        <argument
+            android:name="date"
+            android:defaultValue=""
+            app:argType="string"/>
         <action
             android:id="@+id/action_addDayScheduleFragment_to_dayScheduleListFragment"
             app:destination="@id/dayScheduleListFragment" />
