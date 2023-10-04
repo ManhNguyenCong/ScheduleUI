@@ -386,7 +386,7 @@ class AddDayScheduleFragment : Fragment() {
      * or add new a subject without loop content
      *
      */
-    private fun addNewSubjects(): Boolean {
+    private fun addNewSubjects() {
         if (isEntryValid()) {
             // Check this subject loop?
             if (binding.loopContent.visibility == View.GONE) { // Don't loop
@@ -409,11 +409,8 @@ class AddDayScheduleFragment : Fragment() {
             val action =
                 AddDayScheduleFragmentDirections.actionAddDayScheduleFragmentToDayScheduleListFragment()
             findNavControllerSafely()?.navigate(action)
-
-            return true
         } else {
             Toast.makeText(context, "Entry subject name!", Toast.LENGTH_SHORT).show()
-            return false
         }
     }
 
@@ -466,22 +463,26 @@ class AddDayScheduleFragment : Fragment() {
      * This function is used to update a subject
      */
     private fun updateSubject() {
-        // Update subject
-        viewModel.updateSubject(
-            args.subjectId,
-            binding.txtName.text.toString(),
-            binding.btnTimeStart.text.toString(),
-            binding.btnTimeEnd.text.toString(),
-            binding.txtLocation.text.toString(),
-            binding.txtTeacher.text.toString(),
-            binding.txtNotes.text.toString(),
-            binding.loopContent.text.toString(),
-            binding.btnDayStart.text.toString()
-        )
+        if(isEntryValid()) {
+            // Update subject
+            viewModel.updateSubject(
+                args.subjectId,
+                binding.txtName.text.toString(),
+                binding.btnTimeStart.text.toString(),
+                binding.btnTimeEnd.text.toString(),
+                binding.txtLocation.text.toString(),
+                binding.txtTeacher.text.toString(),
+                binding.txtNotes.text.toString(),
+                binding.loopContent.text.toString(),
+                binding.btnDayStart.text.toString()
+            )
 
-        // Navigate to DayScheduleListFragment
-        val action =
-            AddDayScheduleFragmentDirections.actionAddDayScheduleFragmentToDayScheduleListFragment()
-        findNavControllerSafely()?.navigate(action)
+            // Navigate to DayScheduleListFragment
+            val action =
+                AddDayScheduleFragmentDirections.actionAddDayScheduleFragmentToDayScheduleListFragment()
+            findNavControllerSafely()?.navigate(action)
+        } else {
+            Toast.makeText(context, "Entry subject name!", Toast.LENGTH_SHORT).show()
+        }
     }
 }

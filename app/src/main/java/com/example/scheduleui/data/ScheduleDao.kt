@@ -45,4 +45,20 @@ interface ScheduleDao {
 
     @Delete
     suspend fun deleteSubject(subject: Subject)
+
+    //Notification
+    @Query("SELECT * FROM Notification ORDER BY name")
+    fun getAllNotification(): Flow<List<Notification>>
+
+    @Query("SELECT * FROM Notification WHERE id = :notificationId")
+    fun getNotificationById(notificationId: Int): Flow<Notification>
+
+    @Insert
+    suspend fun insertNotification(notification: Notification)
+
+    @Update
+    suspend fun updateNotification(notification: Notification)
+
+    @Delete
+    suspend fun deleteNotification(notification: Notification)
 }

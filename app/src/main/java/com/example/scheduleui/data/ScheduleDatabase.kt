@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [DaySchedule::class, JobSchedule::class, Notification::class, Subject::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(TypeDataConvert::class)

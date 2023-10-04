@@ -14,5 +14,7 @@ data class Notification(
     @ColumnInfo
     val notes: String,
     @ColumnInfo
-    val time: Calendar
+    val time: Calendar,
+    @ColumnInfo
+    val loopOption: Boolean
 )

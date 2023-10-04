@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -151,8 +150,9 @@ class DayScheduleListFragment : Fragment() {
                 }
 
                 R.id.addRemindMenuItem -> {
-                    //todo Xử lý sự kiện thêm nhắc nhở (thông báo)
-                    Toast.makeText(context, "Add remind", Toast.LENGTH_SHORT).show()
+                    // Navigate to add notification
+                    val action = DayScheduleListFragmentDirections.actionDayScheduleListFragmentToAddNotificationFragment()
+                    findNavControllerSafely()?.navigate(action)
                     true
                 }
 

@@ -9,20 +9,33 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
 import com.example.scheduleui.data.Notification
 import com.example.scheduleui.databinding.NotificationItemBinding
+import com.example.scheduleui.util.formatDayScheduleDate
+import com.example.scheduleui.util.formatDayScheduleTime
 
-class NotificationAdapter(private val showPopupMenu: (View, Int) -> Unit): ListAdapter<Notification, NotificationAdapter.NotificationViewHolder>(
+class NotificationAdapter(private val showPopupMenu: (View, Notification) -> Unit): ListAdapter<Notification, NotificationAdapter.NotificationViewHolder>(
     DiffCallback
 ) {
     class NotificationViewHolder(private val binding: NotificationItemBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(
             notification: Notification,
-            showPopupMenu: (View, Int) -> Unit) {
+            showPopupMenu: (View, Notification) -> Unit) {
+            // Set up name
             binding.name.text = notification.name
+            // Set up event open popup menu
             binding.popupMenu.setOnClickListener {
-                showPopupMenu(binding.popupMenu, notification.id)
+                showPopupMenu(binding.popupMenu, notification)
             }
-
-//            binding.time.text = notification.time
+            // Set up time
+            if(notification.loopOption) { // Loop every day
+                binding.time.text = String.format("%s - %s",
+                    notification.time.formatDayScheduleTime(),
+                    "Hằng ngày")
+            } else { // Don't loop
+                binding.time.text = String.format("%s, %s",
+                    notification.time.formatDayScheduleDate(),
+                    notification.time.formatDayScheduleTime())
+            }
+            // Set up content
             binding.notes.text = notification.notes
         }
     }

@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_dayScheduleListFragment_to_detailDayScheduleFragment"
             app:destination="@id/detailDayScheduleFragment" />
+        <action
+            android:id="@+id/action_dayScheduleListFragment_to_addNotificationFragment"
+            app:destination="@id/addNotificationFragment" />
     </fragment>
     <fragment
         android:id="@+id/addDayScheduleFragment"
