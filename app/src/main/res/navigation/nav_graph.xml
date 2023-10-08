@@ -39,7 +39,7 @@
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
-        android:name="com.example.scheduleui.ui.setting.SettingFragment"
+        android:name="com.example.scheduleui.ui.setting.fragment.SettingFragment"
         android:label="Thời khóa biểu"
         tools:layout="@layout/fragment_setting" />
     <fragment

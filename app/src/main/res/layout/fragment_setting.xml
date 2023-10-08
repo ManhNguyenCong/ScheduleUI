@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.setting.SettingFragment">
+    tools:context=".ui.setting.fragment.SettingFragment">
 
     <ScrollView
         android:layout_width="0dp"
@@ -81,7 +81,7 @@
                 style="@style/settingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="THỜI KHÓA BIỂU"
+                android:text="@string/navViewTitle"
                 app:drawableStartCompat="@drawable/baseline_menu_book_36"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/line1" />
@@ -138,6 +138,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="64dp"
+                android:paddingEnd="8dp"
                 android:text="@string/expandSettingTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/line2" />
@@ -165,12 +166,12 @@
                 style="@style/subSettingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/displaySubjectTitle"
+                android:text="@string/subjectDisplayTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/typeOfDisplayValue" />
 
             <TextView
-                android:id="@+id/displaySubjectValue"
+                android:id="@+id/subjectDisplayValue"
                 style="@style/subSettingValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -185,7 +186,7 @@
                 android:layout_marginTop="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/displaySubjectValue" />
+                app:layout_constraintTop_toBottomOf="@id/subjectDisplayValue" />
 
             <TextView
                 android:id="@+id/widgetSetting"
