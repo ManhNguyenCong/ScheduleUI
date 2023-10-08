@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
-import com.example.scheduleui.databinding.JobItemBinding
 import com.example.scheduleui.data.JobSchedule
+import com.example.scheduleui.databinding.JobItemBinding
 
 class JobAdapter(
     private val showDetailJob: (Int) -> Unit
@@ -17,7 +17,7 @@ class JobAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(jobSchedule: JobSchedule) {
             binding.name.text = jobSchedule.name
-            binding.time.text = jobSchedule.time
+//            binding.time.text = jobSchedule.time
             binding.location.text = jobSchedule.location
             binding.notes.text = jobSchedule.notes
         }

@@ -31,7 +31,7 @@
     <string name="warningValue">Loại Bảng biểu và Dòng thời gian là khác như. Khi thay đổi dữ liệu được nhập ở Bảng biểu sẽ không hiển thị ở Dòng thời gian và ngược lại</string>
     <string name="expandSettingTitle">(Chỉ loại Bảng biểu)</string>
     <string name="typeOfDisplayTitle">Kiểu hiển thị</string>
-    <string name="displaySubjectTitle">Hiển thị môn học</string>
+    <string name="subjectDisplayTitle">Hiển thị môn học</string>
     <string name="widgetSettingTitle">WIDGET (TIỆN ÍCH)</string>
     <string name="opacitySetting">Độ trong suốt của nền (%)</string>
     <string name="widgetNoteTitle">Hiển thị lên màn hình chính</string>
@@ -53,9 +53,30 @@
     <string name="navViewTitle">THỜI KHÓA BIỂU</string>
     <string name="manageJobMenuItemTitle">Quản lý sự kiện</string>
     <string name="nameSettingDefault">Not set</string>
-    <string name="firstTypeOfSchedule">Dòng thời gian</string>
-    <string name="secondTypeOfSchedule">Bảng biểu</string>
-    <string name="firstTypeOfDisplay">Buổi sáng và Buổi chiều</string>
-    <string name="displaySubjectOption1">Chiều ngang</string>
-    <string name="displaySubjectOption2">Chiều dọc</string>
+    <string name="deleteMenuItemTitle">Xóa</string>
+    <string name="editMenuItemTitle">Sửa</string>
+
+    <!-- String array -->
+    <string-array name="typeOfSchedule">
+        <item>Dòng thời gian</item>
+        <item>Bảng biểu</item>
+    </string-array>
+    <string-array name="typeOfDisplay">
+        <item>Buổi sáng</item>
+        <item>Buổi chiều</item>
+        <item>Cả hai</item>
+    </string-array>
+    <string-array name="subjectDisplay">
+        <item>Chiều ngang</item>
+        <item>Chiều dọc</item>
+    </string-array>
+    <string-array name="dayOfWeeks">
+        <item>Chủ nhật</item>
+        <item>Thứ hai</item>
+        <item>Thứ ba</item>
+        <item>Thứ tư</item>
+        <item>Thứ năm</item>
+        <item>Thứ sáu</item>
+        <item>Thứ bảy</item>
+    </string-array>
 </resources>

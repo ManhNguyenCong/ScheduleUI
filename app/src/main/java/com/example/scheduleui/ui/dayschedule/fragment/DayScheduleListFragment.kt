@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -13,19 +12,44 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
+import com.example.scheduleui.data.ScheduleApplication
 import com.example.scheduleui.databinding.FragmentDayScheduleListBinding
-import com.example.scheduleui.findNavControllerSafely
 import com.example.scheduleui.ui.dayschedule.adapter.DayScheduleAdapter
-import com.example.scheduleui.ui.viewmodel.ScheduleViewModel
-import com.example.scheduleui.ui.viewmodel.ScheduleViewModelFactory
+import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModel
+import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModelFactory
+import com.example.scheduleui.util.findNavControllerSafely
+import com.example.scheduleui.util.setDefaultTime
+import java.util.Calendar
 
 
 class DayScheduleListFragment : Fragment() {
 
     private lateinit var binding: FragmentDayScheduleListBinding
 
-    private val scheduleViewModel by activityViewModels<ScheduleViewModel> {
-        ScheduleViewModelFactory()
+    // DayScheduleAdapter for RecyclerView
+    private var dayScheduleAdapter: DayScheduleAdapter? = null
+
+    // Is load fragment completed?
+    private var isLoadFragmentCompleted = false
+
+    // Is wait time to autoAddDay?
+    private var isWaitTime = true
+
+    // Today position for event comeback today
+    private var todayPosition: Int = -1
+        set(value) {
+            // When first time change value (open app)
+            if (field == -1) {
+                goToDay(value)
+            }
+            field = value
+        }
+
+    // View model
+    private val dayScheduleViewModel: DayScheduleViewModel by activityViewModels {
+        DayScheduleViewModelFactory(
+            (activity?.application as ScheduleApplication).database.scheduleDao()
+        )
     }
 
     override fun onCreateView(
@@ -34,6 +58,10 @@ class DayScheduleListFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentDayScheduleListBinding.inflate(inflater, container, false)
+
+        // Load elements of fragment
+        loadFragment()
+
         return binding.root
     }
 
@@ -42,9 +70,12 @@ class DayScheduleListFragment : Fragment() {
 
         // Setup toolbar
         setupToolbar()
-
-        // Khởi tạo danh sách day schedule
-        loadRecyclerView()
+        // Add day schedule for first time use
+        dayScheduleViewModel.addDaySchedulesForFirstTime()
+        // Load daySchedule list
+        loadListDaySchedule()
+        // Scroll to today
+        goToDay(todayPosition)
     }
 
     /**
@@ -57,49 +88,71 @@ class DayScheduleListFragment : Fragment() {
 
         // Clean old menu
         toolbar.menu?.clear()
-
         // Inflate menu layout
-        toolbar.inflateMenu(R.menu.day_schedule_fragment_menu)
-
+        toolbar.inflateMenu(R.menu.list_fragment_menu)
         // Set MenuItem on click
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.comeBackMenuItem -> {
-                    //todo xử lý sự kiện quay về ngày hiện tại
-                    goToDay(dayPosition = 3)
-                    Toast.makeText(context, "Comeback today", Toast.LENGTH_SHORT).show()
+                    // Scroll to today
+                    goToDay(todayPosition)
                     true
                 }
 
                 R.id.refreshMenuItem -> {
-                    //todo xử lý làm mới
-                    loadRecyclerView()
-                    Toast.makeText(context, "Refresh", Toast.LENGTH_SHORT).show()
+                    // Re-load fragment
+                    loadFragment()
+                    // Re-load list day schedule
+                    loadListDaySchedule()
+
                     true
                 }
 
                 R.id.goToMenuItem -> {
-                    //todo Xử lý sự kiện đi đến 1 ngày nào đó
-
+                    // Create date picker dialog
                     val datePickerDialog = DatePickerDialog(
                         requireContext(),
-                        { _, _, _, _ ->
-                            goToDay(0)
+                        { _, year, month, dayOfMonth ->
+                            // Get day choose
+                            val dayChoose =
+                                Calendar.Builder().setDate(year, month, dayOfMonth).build()
+                            // Get current list
+                            val currentList =
+                                dayScheduleAdapter?.currentList ?: return@DatePickerDialog
+                            if (dayScheduleViewModel.checkAutoAddDayCompleted(
+                                    currentList,
+                                    dayChoose
+                                )
+                            ) {
+                                // If day choose in dayScheduleList go to...
+                                goToDay(currentList.indexOf(currentList.find { daySchedule ->
+                                    daySchedule.day == dayChoose
+                                }))
+                            } else {
+                                // If day choose not in dayScheduleList, auto add
+                                if (!isWaitTime) {
+                                    // Add day to day choose
+                                    dayScheduleViewModel.addDayScheduleToDay(dayChoose)
+                                    // Set wait time
+                                    isWaitTime = true
+                                }
+                            }
+
+                            checkAutoAddCompleted(dayChoose)
                         },
-                        2023,
-                        9,
-                        21
+                        Calendar.getInstance().get(Calendar.YEAR),
+                        Calendar.getInstance().get(Calendar.MONTH) + 1,
+                        Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
                     )
-
+                    // Show date picker dialog
                     datePickerDialog.show()
-
-                    Toast.makeText(context, "Go to ...", Toast.LENGTH_SHORT).show()
                     true
                 }
 
                 R.id.addRemindMenuItem -> {
-                    //todo Xử lý sự kiện thêm nhắc nhở (thông báo)
-                    Toast.makeText(context, "Add remind", Toast.LENGTH_SHORT).show()
+                    // Navigate to add notification
+                    val action = DayScheduleListFragmentDirections.actionDayScheduleListFragmentToAddNotificationFragment()
+                    findNavControllerSafely()?.navigate(action)
                     true
                 }
 
@@ -108,16 +161,31 @@ class DayScheduleListFragment : Fragment() {
         }
     }
 
-    private fun loadRecyclerView() {
+    /**
+     * This function is used to load elements of fragment
+     */
+    private fun loadFragment() {
         //todo đổ dữ liệu vào DayScheduleListFragment
-        val adapter =
+        dayScheduleAdapter =
             DayScheduleAdapter(
                 requireContext(),
-                scheduleViewModel.subjects,
-                addSubject = {
+                addSubject = { date ->
                     val action =
-                        DayScheduleListFragmentDirections.actionDayScheduleListFragmentToAddDayScheduleFragment()
+                        DayScheduleListFragmentDirections.actionDayScheduleListFragmentToAddDayScheduleFragment(
+                            date = date
+                        )
                     findNavControllerSafely()?.navigate(action)
+                },
+                submitListSubjects = { subjectAdapter, dayScheduleId, hasSubjectView ->
+                    dayScheduleViewModel.getSubjectByDayScheduleId(dayScheduleId)
+                        .observe(this.viewLifecycleOwner) { subjects ->
+                            subjectAdapter.submitList(subjects)
+                            if(subjects.isEmpty()) {
+                                hasSubjectView.visibility = View.VISIBLE
+                            } else {
+                                hasSubjectView.visibility = View.GONE
+                            }
+                        }
                 },
                 showDetailSubject = { subjectId ->
                     val action =
@@ -128,11 +196,110 @@ class DayScheduleListFragment : Fragment() {
                 }
             )
 
-        adapter.submitList(scheduleViewModel.daySchedules)
-        binding.DayScheduleList.adapter = adapter
+        binding.DayScheduleList.adapter = dayScheduleAdapter
         binding.DayScheduleList.layoutManager = LinearLayoutManager(requireContext())
+    }
 
-        goToDay(dayPosition = 3)
+    /**
+     * This function is used to load data of list day schedule
+     */
+    private fun loadListDaySchedule() {
+        dayScheduleViewModel.daySchedules.observe(this.viewLifecycleOwner) { daySchedules ->
+            daySchedules?.also {
+                dayScheduleAdapter?.submitList(daySchedules)
+            }
+
+            // Get today position to event comeback today
+            todayPosition = daySchedules.indexOf(
+                daySchedules.find { it.day == Calendar.getInstance().setDefaultTime() }
+            )
+        }
+
+        // Set auto add
+        autoAddDaySchedule()
+    }
+
+    /**
+     * This function is used to add day schedule automatically
+     * when user scrolls to first item or last item in list
+     *
+     */
+    private fun autoAddDaySchedule() {
+        binding.DayScheduleList.setOnScrollChangeListener { _, _, _, _, _ ->
+            // Target day auto add
+            var targetDay: Calendar? = null
+
+            // Process case: when open app, auto add day schedule
+            if (todayPosition != -1 && !isLoadFragmentCompleted &&
+                (binding.DayScheduleList.layoutManager as LinearLayoutManager)
+                    .findFirstCompletelyVisibleItemPosition() == todayPosition
+            ) {
+                isLoadFragmentCompleted = true
+                isWaitTime = false
+            }
+
+            // Don't auto add when isWaitTime
+            if (isWaitTime) {
+                return@setOnScrollChangeListener
+            }
+
+            // Get dayScheduleAdapter
+            val adapter = dayScheduleAdapter ?: return@setOnScrollChangeListener
+            // Get position of first visible Item now
+            val firstVisibleItemPosition =
+                (binding.DayScheduleList.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
+            // Get position of last visible Item now
+            val lastVisibleItemPosition =
+                (binding.DayScheduleList.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
+
+            // If firstVisibleItem is firstItem in list and isn't wait time,
+            // add 7 day before first day in list
+            if (firstVisibleItemPosition == 0 && !isWaitTime) {
+                // Set isWaitTime when start auto add
+                isWaitTime = true
+                // Get first day in list
+                val firstDay = adapter.currentList[0].day
+                // Get target day
+                targetDay = Calendar.Builder()
+                    .setInstant(firstDay.timeInMillis - 7 * DayScheduleViewModel.DAY_TO_MILLIS)
+                    .build()
+                // Add day to first day - 7
+                dayScheduleViewModel.addDayScheduleToDay(targetDay!!)
+            }
+
+            // If lastVisibleItem is lastItem in list and isn't wait time,
+            // add 7 day after last day in list
+            if (lastVisibleItemPosition == adapter.currentList.size - 1 && !isWaitTime) {
+                // Set isWaitTime when start auto add
+                isWaitTime = true
+                // Get last day in list
+                val lastDay = adapter.currentList[adapter.currentList.size - 1].day
+                // Get targetDay
+                targetDay = Calendar.Builder()
+                    .setInstant(lastDay.timeInMillis + 7 * DayScheduleViewModel.DAY_TO_MILLIS)
+                    .build()
+                // Add day to last day + 7
+                dayScheduleViewModel.addDayScheduleToDay(targetDay!!)
+            }
+
+            // Check auto add day completed?
+            checkAutoAddCompleted(targetDay ?: return@setOnScrollChangeListener)
+        }
+    }
+
+    /**
+     * This function is used to check "auto add day schedule is completed?"
+     */
+    private fun checkAutoAddCompleted(targetDay: Calendar) {
+        dayScheduleViewModel.daySchedules.observe(this.viewLifecycleOwner) { daySchedules ->
+            if (isWaitTime) {
+                // Check auto add completed?
+                isWaitTime = !dayScheduleViewModel.checkAutoAddDayCompleted(
+                    daySchedules,
+                    targetDay
+                )
+            }
+        }
     }
 
     /**
@@ -141,6 +308,8 @@ class DayScheduleListFragment : Fragment() {
      * @param dayPosition
      */
     private fun goToDay(dayPosition: Int) {
+        if (dayPosition == -1) return
+
         val smoothScroller: RecyclerView.SmoothScroller = object : LinearSmoothScroller(context) {
             // Thiết lập vị trí mà child xuất hiện (start -> trên cùng)
             override fun getVerticalSnapPreference(): Int {

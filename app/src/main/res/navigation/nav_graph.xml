@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_dayScheduleListFragment_to_detailDayScheduleFragment"
             app:destination="@id/detailDayScheduleFragment" />
+        <action
+            android:id="@+id/action_dayScheduleListFragment_to_addNotificationFragment"
+            app:destination="@id/addNotificationFragment" />
     </fragment>
     <fragment
         android:id="@+id/addDayScheduleFragment"
@@ -26,13 +29,17 @@
             android:name="subjectId"
             android:defaultValue="-1"
             app:argType="integer" />
+        <argument
+            android:name="date"
+            android:defaultValue=""
+            app:argType="string"/>
         <action
             android:id="@+id/action_addDayScheduleFragment_to_dayScheduleListFragment"
             app:destination="@id/dayScheduleListFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
-        android:name="com.example.scheduleui.ui.setting.SettingFragment"
+        android:name="com.example.scheduleui.ui.setting.fragment.SettingFragment"
         android:label="Thời khóa biểu"
         tools:layout="@layout/fragment_setting" />
     <fragment

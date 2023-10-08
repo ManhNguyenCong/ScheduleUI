@@ -12,20 +12,27 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.scheduleui.R
+import com.example.scheduleui.data.ScheduleApplication
 import com.example.scheduleui.databinding.FragmentNotificationBinding
-import com.example.scheduleui.findNavControllerSafely
 import com.example.scheduleui.ui.notification.adapter.NotificationAdapter
-import com.example.scheduleui.ui.viewmodel.ScheduleViewModel
-import com.example.scheduleui.ui.viewmodel.ScheduleViewModelFactory
+import com.example.scheduleui.ui.notification.viewmodel.NotificationViewModel
+import com.example.scheduleui.ui.notification.viewmodel.NotificationViewModelFactory
+import com.example.scheduleui.util.findNavControllerSafely
 
 class NotificationFragment : Fragment() {
 
-
+    // Binding to fragment_notification
     private lateinit var binding: FragmentNotificationBinding
 
-    private val viewModel: ScheduleViewModel by activityViewModels {
-        ScheduleViewModelFactory()
+    // Notification view model
+    private val viewModel: NotificationViewModel by activityViewModels {
+        NotificationViewModelFactory(
+            (activity?.application as ScheduleApplication).database.scheduleDao()
+        )
     }
+
+    // Notification adapter
+    private var notificationAdapter: NotificationAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,17 +40,22 @@ class NotificationFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentNotificationBinding.inflate(inflater, container, false)
+
+        // Setup toolbar
+        setupToolbar()
+        // Load recycler view
+        loadRecycleView()
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Setup toolbar
-        setupToolbar()
-
-        // Load notification list
-        loadRecycleView()
+        // Load data for notification list
+        viewModel.notifications.observe(this.viewLifecycleOwner) {
+            notificationAdapter?.submitList(it)
+        }
     }
 
     /**
@@ -56,7 +68,7 @@ class NotificationFragment : Fragment() {
         // Clean old menu
         toolbar.menu.clear()
         // Inflate menu layout
-        toolbar.inflateMenu(R.menu.day_schedule_fragment_menu)
+        toolbar.inflateMenu(R.menu.list_fragment_menu)
         // Repair menu item
         toolbar.menu.removeItem(R.id.addRemindMenuItem)
         toolbar.menu.removeItem(R.id.goToMenuItem)
@@ -66,18 +78,16 @@ class NotificationFragment : Fragment() {
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.comeBackMenuItem -> {
-                    //Todo Xử lý sự kiện thêm thông báo
+                    // Navigate to add notification fragment
                     val action =
                         NotificationFragmentDirections.actionNotificationFragmentToAddNotificationFragment()
                     findNavControllerSafely()?.navigate(action)
-                    Toast.makeText(context, "Thêm thông báo", Toast.LENGTH_SHORT).show()
                     true
                 }
 
                 R.id.refreshMenuItem -> {
                     //Todo xử lý sự kiện làm mới
                     Toast.makeText(context, "Refresh", Toast.LENGTH_SHORT).show()
-                    loadRecycleView()
                     true
                 }
 
@@ -87,45 +97,44 @@ class NotificationFragment : Fragment() {
     }
 
     /**
-     * This function is used to load data of notification list
+     * This function is used to recycler view of list notifications
      */
     private fun loadRecycleView() {
-        //todo đổ dữ liệu vào recycleview
-        val adapter = NotificationAdapter { view, notificationId ->
+        notificationAdapter = NotificationAdapter { view, notification ->
+            // Event click "more vert icon" in each notification to open popup menu
 
+            // Init popup menu
             val popupMenu = PopupMenu(context, view)
-
-            popupMenu.menu.add("Sửa")
-            popupMenu.menu.add("Xóa")
-
+            // Add menu to popup menu
+            popupMenu.menu.add(resources.getString(R.string.editMenuItemTitle))
+            popupMenu.menu.add(resources.getString(R.string.deleteMenuItemTitle))
+            // Set up menu item onClick
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.title) {
-                    "Sửa" -> {
+                    resources.getString(R.string.editMenuItemTitle) -> {
+                        // Navigate to add notification fragment
                         val action =
                             NotificationFragmentDirections.actionNotificationFragmentToAddNotificationFragment(
-                                notificationId
+                                notification.id
                             )
                         findNavControllerSafely()?.navigate(action)
                         true
                     }
 
-                    "Xóa" -> {
-                        Toast.makeText(
-                            context,
-                            "Delete notification $notificationId",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    resources.getString(R.string.deleteMenuItemTitle) -> {
+                        // Delete this notification
+                        viewModel.delete(notification)
                         true
                     }
 
                     else -> false
                 }
             }
-
+            // Show popup menu
             popupMenu.show()
         }
-        adapter.submitList(viewModel.notifications)
-        binding.notificationList.adapter = adapter
+
+        binding.notificationList.adapter = notificationAdapter
         binding.notificationList.layoutManager = LinearLayoutManager(this.context)
     }
 }

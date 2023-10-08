@@ -9,50 +9,48 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
-import com.example.scheduleui.databinding.DayScheduleItemBinding
 import com.example.scheduleui.data.DaySchedule
-import com.example.scheduleui.data.Subject
+import com.example.scheduleui.databinding.DayScheduleItemBinding
+import com.example.scheduleui.util.formatDayScheduleDate
 
 class DayScheduleAdapter(
     private val context: Context,
-    private val subjects: List<Subject>,
-    private val addSubject: () -> Unit,
+    private val addSubject: (String) -> Unit,
+    private val submitListSubjects: (SubjectAdapter, Int, View) -> Unit,
     private val showDetailSubject: (Int) -> Unit
 ) :
     ListAdapter<DaySchedule, DayScheduleAdapter.DayScheduleViewHolder>(
         DiffCallback
     ) {
+
     class DayScheduleViewHolder(private val binding: DayScheduleItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        //Gắn dữ liệu vào giao diện
+        /**
+         * This function is used to bind data for DayScheduleItem
+         */
         fun bind(
             context: Context,
             daySchedule: DaySchedule,
-            subjects: List<Subject>,
-            addSubject: () -> Unit,
-            showDetailSubject: (Int) -> Unit
+            addSubject: (String) -> Unit,
+            submitListSubjects: (SubjectAdapter, Int, View) -> Unit,
+            showDetailSubject: (Int) -> Unit,
         ) {
-
-            binding.day.text = daySchedule.day
+            // Set date
+            binding.day.text = daySchedule.day.formatDayScheduleDate()
+            // Event add subject
             binding.day.setOnClickListener {
-                addSubject()
+                addSubject(daySchedule.day.formatDayScheduleDate())
             }
 
-            //todo add subjectAdapter
-            val subjectInDay =
-                subjects.filter { subject -> subject.dayScheduleId == daySchedule.id }
-
-            if (subjectInDay.isEmpty()) {
-                binding.hasSubject.visibility = View.VISIBLE
-            } else {
-                binding.hasSubject.visibility = View.GONE
-                val adapter = SubjectAdapter(showDetailSubject)
-
-                adapter.submitList(subjectInDay)
-                binding.SubjectList.adapter = adapter
-                binding.SubjectList.layoutManager = LinearLayoutManager(context)
-            }
+            // Init subjectAdapter
+            val subjectAdapter = SubjectAdapter(showDetailSubject)
+            // Submit list subject in this day
+            submitListSubjects(subjectAdapter, daySchedule.id, binding.hasSubject)
+            // Set adapter for recycler view subject
+            binding.SubjectList.adapter = subjectAdapter
+            //Set layout manager for recycler view subject
+            binding.SubjectList.layoutManager = LinearLayoutManager(context)
         }
     }
 
@@ -69,8 +67,8 @@ class DayScheduleAdapter(
         holder.bind(
             context,
             getItem(position),
-            subjects,
             addSubject,
+            submitListSubjects,
             showDetailSubject
         )
     }
