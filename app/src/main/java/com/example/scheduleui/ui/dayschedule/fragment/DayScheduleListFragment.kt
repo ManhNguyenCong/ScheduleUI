@@ -165,7 +165,6 @@ class DayScheduleListFragment : Fragment() {
      * This function is used to load elements of fragment
      */
     private fun loadFragment() {
-        //todo đổ dữ liệu vào DayScheduleListFragment
         dayScheduleAdapter =
             DayScheduleAdapter(
                 requireContext(),
