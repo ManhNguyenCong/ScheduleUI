@@ -1,4 +1,4 @@
-package com.example.scheduleui.data
+package com.example.scheduleui.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -9,12 +9,12 @@ import java.util.Calendar
 data class Notification(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
-    @ColumnInfo
+    @ColumnInfo(name = "name")
     val name: String,
-    @ColumnInfo
+    @ColumnInfo(name = "notes")
     val notes: String,
-    @ColumnInfo
+    @ColumnInfo(name = "time")
     val time: Calendar,
-    @ColumnInfo
-    val loopOption: Boolean
+    @ColumnInfo(name = "loop")
+    val isLoop: Boolean
 )

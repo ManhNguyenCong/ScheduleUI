@@ -6,9 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.scheduleui.data.Subject
+import com.example.scheduleui.data.model.Subject
 import com.example.scheduleui.databinding.SubjectItemBinding
-import com.example.scheduleui.util.formatDayScheduleTime
 
 class SubjectAdapter(private val detailSubject: (Int) -> Unit) :
     ListAdapter<Subject, SubjectAdapter.SubjectViewHolder>(DiffCallback) {
@@ -20,16 +19,16 @@ class SubjectAdapter(private val detailSubject: (Int) -> Unit) :
         fun bind(subject: Subject) {
             // Set subject name
             binding.name.text = subject.name
-            // Set time start
-            binding.timeStart.text = subject.timeStart.formatDayScheduleTime()
+            // TODO Set time start
+//            binding.timeStart.text = subject.timeStart.formatDayScheduleTime()
             // Check subject location
-            if(subject.location.isEmpty()) {
+            if (subject.location.isEmpty()) {
                 binding.location.visibility = View.GONE
             } else {
                 binding.location.text = subject.location
             }
             // Check subject teacher
-            if(subject.teacher.isEmpty()) {
+            if (subject.teacher.isEmpty()) {
                 binding.teacher.visibility = View.GONE
             } else {
                 binding.teacher.text = subject.teacher
@@ -60,7 +59,14 @@ class SubjectAdapter(private val detailSubject: (Int) -> Unit) :
             }
 
             override fun areContentsTheSame(oldItem: Subject, newItem: Subject): Boolean {
-                return oldItem.timeStart == newItem.timeStart
+                return oldItem.name == newItem.name &&
+                        oldItem.date == newItem.date &&
+                        oldItem.timeStart == newItem.timeStart &&
+                        oldItem.timeEnd == newItem.timeEnd &&
+                        oldItem.location == newItem.location &&
+                        oldItem.teacher == newItem.teacher &&
+                        oldItem.notes == newItem.notes &&
+                        oldItem.loop == newItem.loop
             }
         }
     }

@@ -28,7 +28,6 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.dayScheduleListFragment,
-                R.id.jobScheduleListFragment,
                 R.id.notificationFragment
             ),
             binding.drawerLayout

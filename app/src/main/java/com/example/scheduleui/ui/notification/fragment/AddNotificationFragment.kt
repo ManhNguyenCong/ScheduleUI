@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import com.example.scheduleui.R
-import com.example.scheduleui.data.ScheduleApplication
+import com.example.scheduleui.ScheduleApplication
 import com.example.scheduleui.databinding.FragmentAddNotificationBinding
 import com.example.scheduleui.ui.notification.viewmodel.NotificationViewModel
 import com.example.scheduleui.ui.notification.viewmodel.NotificationViewModelFactory

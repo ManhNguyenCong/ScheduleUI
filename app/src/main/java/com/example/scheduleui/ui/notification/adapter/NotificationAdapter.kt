@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
-import com.example.scheduleui.data.Notification
+import com.example.scheduleui.data.model.Notification
 import com.example.scheduleui.databinding.NotificationItemBinding
 import com.example.scheduleui.util.formatDayScheduleDate
 import com.example.scheduleui.util.formatDayScheduleTime
@@ -26,7 +26,7 @@ class NotificationAdapter(private val showPopupMenu: (View, Notification) -> Uni
                 showPopupMenu(binding.popupMenu, notification)
             }
             // Set up time
-            if(notification.loopOption) { // Loop every day
+            if(notification.isLoop) { // Loop every day
                 binding.time.text = String.format("%s - %s",
                     notification.time.formatDayScheduleTime(),
                     "Hằng ngày")

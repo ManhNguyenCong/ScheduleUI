@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.scheduleui.data.Notification
-import com.example.scheduleui.data.ScheduleDao
+import com.example.scheduleui.data.model.Notification
+import com.example.scheduleui.data.localdatabase.ScheduleDao
 import com.example.scheduleui.util.getDateFromString
 import com.example.scheduleui.util.getTimeFromTimeString
 import kotlinx.coroutines.launch

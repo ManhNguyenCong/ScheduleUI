@@ -25,7 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.scheduleui.R
-import com.example.scheduleui.data.ScheduleApplication
+import com.example.scheduleui.ScheduleApplication
 import com.example.scheduleui.databinding.FragmentNotificationBinding
 import com.example.scheduleui.ui.notification.adapter.NotificationAdapter
 import com.example.scheduleui.ui.notification.viewmodel.NotificationViewModel
@@ -189,7 +189,7 @@ class NotificationFragment : Fragment() {
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
                 // Set time to notify a notification
-                if(notification.loopOption) {
+                if(notification.isLoop) {
                     // Loop every day
                     alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, notification.time.timeInMillis, 24 * 3_600_000, pendingIntent)
                 } else {

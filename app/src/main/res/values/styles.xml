@@ -5,7 +5,7 @@
         <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline3
         </item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textSize">24sp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:textColor">@color/blue</item>
         <item name="drawableEndCompat">@drawable/baseline_add_24</item>
         <item name="drawableTint">@color/gray</item>

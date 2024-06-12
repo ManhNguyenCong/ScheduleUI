@@ -1,14 +1,16 @@
-package com.example.scheduleui.data
+package com.example.scheduleui.data.localdatabase
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.scheduleui.data.model.Notification
+import com.example.scheduleui.data.model.Subject
 
 @Database(
-    entities = [DaySchedule::class, JobSchedule::class, Notification::class, Subject::class],
-    version = 2,
+    entities = [Notification::class, Subject::class],
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(TypeDataConvert::class)
@@ -19,7 +21,7 @@ abstract class ScheduleDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: ScheduleDatabase? = null
 
-        fun getDatabase(context: Context):ScheduleDatabase {
+        fun getDatabase(context: Context): ScheduleDatabase {
             // if the INSTANCE is not null, then return it,
             // if it is, then create the database
             return INSTANCE ?: synchronized(this) {

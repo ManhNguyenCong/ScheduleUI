@@ -1,6 +1,7 @@
-package com.example.scheduleui.data
+package com.example.scheduleui
 
 import android.app.Application
+import com.example.scheduleui.data.localdatabase.ScheduleDatabase
 
 class ScheduleApplication : Application() {
     val database: ScheduleDatabase by lazy {

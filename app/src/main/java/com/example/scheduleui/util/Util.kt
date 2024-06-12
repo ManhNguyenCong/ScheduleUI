@@ -3,6 +3,8 @@ package com.example.scheduleui.util
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 /**
@@ -73,4 +75,12 @@ fun Fragment.findNavControllerSafely(): NavController? {
     } catch (e: IllegalStateException) {
         null
     }
+}
+
+fun LocalDate.format(pattern: String?): String {
+    return this.format(
+        pattern?.let {
+            DateTimeFormatter.ofPattern(pattern)
+        } ?: DateTimeFormatter.ISO_LOCAL_DATE
+    )
 }

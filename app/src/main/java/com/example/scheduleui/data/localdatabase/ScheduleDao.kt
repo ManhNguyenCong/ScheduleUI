@@ -1,31 +1,19 @@
-package com.example.scheduleui.data
+package com.example.scheduleui.data.localdatabase
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.MapInfo
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.scheduleui.data.model.Notification
+import com.example.scheduleui.data.model.Subject
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface ScheduleDao {
-
-    // DaySchedule
-    @Query("SELECT * FROM DaySchedule ORDER BY day")
-    fun getAllDaySchedule(): Flow<List<DaySchedule>>
-
-    @Query("SELECT * FROM DaySchedule WHERE id = :id")
-    fun getDayScheduleById(id: Int): Flow<DaySchedule>
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertDaySchedule(daySchedule: DaySchedule)
-
-    @Update
-    suspend fun updateDaySchedule(daySchedule: DaySchedule)
-
-    @Delete
-    suspend fun deleteDaySchedule(daySchedule: DaySchedule)
 
     // Subject
     @Query("SELECT * FROM Subject")
@@ -34,8 +22,11 @@ interface ScheduleDao {
     @Query("SELECT * FROM Subject WHERE id = :id")
     fun getSubjectById(id: Int): Flow<Subject>
 
-    @Query("SELECT * FROM Subject WHERE dayScheduleId = :dayScheduleId")
-    fun getSubjectByDayScheduleId(dayScheduleId: Int): Flow<List<Subject>>
+    @MapInfo(keyColumn = "date")
+    @Query("SELECT date, * FROM Subject WHERE date IN (:days) GROUP BY date")
+    fun getSubjectsInDays(
+        days: List<LocalDate>
+    ): Flow<Map<LocalDate, List<Subject>>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertSubject(subject: Subject)

@@ -7,15 +7,16 @@
     tools:context=".ui.dayschedule.fragment.DayScheduleListFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/DayScheduleList"
+        android:id="@+id/rvDaySchedules"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:itemCount="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:itemCount="3"
         tools:listitem="@layout/day_schedule_item" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,11 +13,6 @@
             android:icon="@drawable/baseline_menu_book_24"
             android:title="@string/TKB" />
         <item
-            android:id="@+id/jobScheduleListFragment"
-            android:checkable="true"
-            android:icon="@drawable/baseline_calendar_month_24"
-            android:title="@string/LCV" />
-        <item
             android:id="@+id/notificationFragment"
             android:checkable="true"
             android:icon="@drawable/baseline_notifications_24"
