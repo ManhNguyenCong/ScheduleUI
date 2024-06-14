@@ -3,6 +3,9 @@ package com.example.scheduleui.util
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 /**
@@ -39,11 +42,8 @@ fun Calendar.formatDayScheduleDate(): String {
  * This function is used to set time to 00:00:00
  */
 fun Calendar.setDefaultTime(): Calendar {
-    return Calendar.Builder()
-        .setDate(
-            this.get(Calendar.YEAR),
-            this.get(Calendar.MONTH),
-            this.get(Calendar.DAY_OF_MONTH)
+    return Calendar.Builder().setDate(
+            this.get(Calendar.YEAR), this.get(Calendar.MONTH), this.get(Calendar.DAY_OF_MONTH)
         ).build()
 }
 
@@ -73,4 +73,15 @@ fun Fragment.findNavControllerSafely(): NavController? {
     } catch (e: IllegalStateException) {
         null
     }
+}
+
+fun LocalDate.format(pattern: String?): String {
+    return this.format(pattern?.let {
+        DateTimeFormatter.ofPattern(pattern)
+    } ?: DateTimeFormatter.ISO_LOCAL_DATE)
+}
+
+fun LocalTime.format(pattern: String?): String {
+    return this.format(pattern?.let { DateTimeFormatter.ofPattern(it) }
+        ?: DateTimeFormatter.ISO_LOCAL_TIME)
 }

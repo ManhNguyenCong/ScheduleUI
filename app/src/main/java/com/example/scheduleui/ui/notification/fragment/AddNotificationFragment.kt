@@ -12,16 +12,19 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import com.example.scheduleui.R
-import com.example.scheduleui.data.ScheduleApplication
+import com.example.scheduleui.ScheduleApplication
+import com.example.scheduleui.data.localdatabase.SettingPreferences
+import com.example.scheduleui.data.model.Notification
+import com.example.scheduleui.data.repository.NotifRepository
+import com.example.scheduleui.data.repository.SubjectRepository
 import com.example.scheduleui.databinding.FragmentAddNotificationBinding
-import com.example.scheduleui.ui.notification.viewmodel.NotificationViewModel
-import com.example.scheduleui.ui.notification.viewmodel.NotificationViewModelFactory
+import com.example.scheduleui.ui.DayScheduleViewModel
+import com.example.scheduleui.ui.DayScheduleViewModelFactory
 import com.example.scheduleui.util.findNavControllerSafely
-import com.example.scheduleui.util.formatDayScheduleDate
-import com.example.scheduleui.util.formatDayScheduleTime
-import com.example.scheduleui.util.getDateFromString
-import com.example.scheduleui.util.getTimeFromTimeString
-import java.util.Calendar
+import com.example.scheduleui.util.format
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 class AddNotificationFragment : Fragment() {
 
@@ -31,16 +34,31 @@ class AddNotificationFragment : Fragment() {
     // Binding to fragment_add_notification
     private lateinit var binding: FragmentAddNotificationBinding
 
-    // Notification view model
-    private val viewModel: NotificationViewModel by activityViewModels {
-        NotificationViewModelFactory(
-            (activity?.application as ScheduleApplication).database.scheduleDao()
+    private val viewModel: DayScheduleViewModel by activityViewModels {
+        DayScheduleViewModelFactory(
+            SubjectRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            NotifRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            SettingPreferences(requireContext())
         )
     }
 
+    private var notif: Notification? = null
+
+    private var datetime = LocalDateTime.now().plusHours(1)
+        set(value) {
+            if (!value.isAfter(LocalDateTime.now())) {
+                Toast.makeText(
+                    requireContext(), "Đã qua thời gian được chọn...", Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                field = value
+                binding.day.text = field.toLocalDate().format(pattern = "ccc, dd/MM/yyyy")
+                binding.time.text = field.toLocalTime().format(pattern = "HH:mm")
+            }
+        }
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentAddNotificationBinding.inflate(
@@ -49,8 +67,6 @@ class AddNotificationFragment : Fragment() {
 
         // Setup toolbar
         setupToolbar()
-        // Load fragment
-        loadFragment()
 
         return binding.root
     }
@@ -58,9 +74,64 @@ class AddNotificationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Load content
-        loadContent()
+        if (args.notificationId != -1) {
+            viewModel.getNotifById(args.notificationId).observe(this.viewLifecycleOwner) {
+                notif = it
+                bind()
+            }
+        } else {
+            setBtnDate()
+            setBtnTime()
+        }
 
+    }
+
+    private fun bind() {
+        notif?.let {
+            binding.txtName.setText(it.name)
+            binding.txtContent.setText(it.notes)
+            datetime = it.time
+            binding.loopOption.isChecked = it.isLoop
+
+            setBtnDate()
+            setBtnTime()
+        }
+    }
+
+    private fun setBtnTime() {
+        binding.time.text = datetime.toLocalTime().format(pattern = "HH:mm")
+        binding.time.setOnClickListener {
+            val timePickerDialog = TimePickerDialog(
+                requireContext(),
+                { timePicker, _, _ ->
+                    datetime = LocalDateTime.of(
+                        datetime.toLocalDate(),
+                        LocalTime.of(timePicker.hour, timePicker.minute)
+                    )
+                },
+                datetime.hour,
+                datetime.minute,
+                true
+            )
+            timePickerDialog.create()
+            timePickerDialog.show()
+        }
+    }
+
+    private fun setBtnDate() {
+        binding.day.text = datetime.toLocalDate().format(pattern = "ccc, dd/MM/yyyy")
+        binding.day.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                requireContext(), { datePicker, _, _, _ ->
+                    datetime = LocalDateTime.of(
+                        LocalDate.of(datePicker.year, datePicker.month + 1, datePicker.dayOfMonth),
+                        datetime.toLocalTime()
+                    )
+                }, datetime.year, datetime.monthValue - 1, datetime.dayOfMonth
+            )
+            datePickerDialog.create()
+            datePickerDialog.show()
+        }
     }
 
     /**
@@ -77,12 +148,10 @@ class AddNotificationFragment : Fragment() {
         // Set onClick for menu item
         toolbar.setOnMenuItemClickListener { menuItem ->
             if (menuItem.itemId == R.id.saveMenuItem) {
-                if(args.notificationId != -1) {
-                    // Update notification
-                    updateNotification()
+                if (args.notificationId != -1) {
+                    update()
                 } else {
-                    // Add new a notification
-                    addNewNotification()
+                    create()
                 }
 
                 true
@@ -92,120 +161,53 @@ class AddNotificationFragment : Fragment() {
         }
     }
 
-    /**
-     * This function is used to load elements in this fragment
-     */
-    private fun loadFragment() {
-        // Set date picker dialog for btnDay
-        binding.day.setOnClickListener {
-            // Get current day in button text
-            val currentDay = binding.day.text.toString().getDateFromString()
-            // Init date picker dialog
-            val dayPickerDialog = DatePickerDialog(
-                requireContext(),
-                { _, year, month, dayOfMonth ->
-                    // Set day choose to btnDay
-                    binding.day.text =
-                        Calendar.Builder().setDate(year, month, dayOfMonth).build()
-                            .formatDayScheduleDate()
-                },
-                currentDay.get(Calendar.YEAR),
-                currentDay.get(Calendar.MONTH),
-                currentDay.get(Calendar.DAY_OF_MONTH)
-            )
-            // Show date picker dialog
-            dayPickerDialog.show()
-        }
+    private fun update() {
+        val title = binding.txtName.text?.toString()?.trim()
+        val content = binding.txtContent.text.toString().trim()
+        val isLoop = binding.loopOption.isChecked
 
-        // Set time picker dialog for btnTime
-        binding.time.setOnClickListener {
-            // Get current time from btnTime
-            val currentTime = binding.time.text.toString().getTimeFromTimeString()
-            // Init time picker dialog
-            val timePickerDialog = TimePickerDialog(
-                requireContext(),
-                { _, hour, minute ->
-                    binding.time.text =
-                        Calendar.Builder().setTimeOfDay(hour, minute, 0).build()
-                            .formatDayScheduleTime()
-                },
-                currentTime.get(Calendar.HOUR_OF_DAY),
-                currentTime.get(Calendar.MINUTE),
-                true
-            )
-            // Show time picker dialog
-            timePickerDialog.show()
-        }
-    }
-
-    /**
-     * This function is used to load content of this fragment
-     */
-    private fun loadContent() {
-        if(args.notificationId != -1) { // Edit fragment
-            viewModel.getNotificationById(args.notificationId).observe(this.viewLifecycleOwner) { notification ->
-                // Set txtName, txtContent
-                binding.txtName.setText(notification.name)
-                binding.txtContent.setText(notification.notes)
-                // Set btnTime, btnDay
-                binding.time.text = notification.time.formatDayScheduleTime()
-                binding.day.text = notification.time.formatDayScheduleDate()
-            }
-        } else { // Add fragment
-            // Set day, time is current time
-            binding.day.text = Calendar.getInstance().formatDayScheduleDate()
-            binding.time.text = Calendar.getInstance().formatDayScheduleTime()
-        }
-    }
-
-    /**
-     * This function is used to validate notification entry (name isn't empty)
-     */
-    private fun validNotificationEntry(): Boolean {
-        return viewModel.validNotificationEntry(binding.txtName.text.toString())
-    }
-
-    /**
-     * This function is used to add new a notification
-     */
-    private fun addNewNotification() {
-        if(validNotificationEntry()) {
-            // Add new a notification
-            viewModel.addNewNotification(
-                binding.txtName.text.toString(),
-                binding.txtContent.text.toString(),
-                binding.day.text.toString(),
-                binding.time.text.toString(),
-                binding.loopOption.text.toString()
-            )
-            // Navigate to NotificationFragment
-            val action =
-                AddNotificationFragmentDirections.actionAddNotificationFragmentToNotificationFragment()
-            findNavControllerSafely()?.navigate(action)
+        if (title.isNullOrEmpty()) {
+            binding.txtName.error = "Không được để trống!!!"
+            return
         } else {
-            Toast.makeText(context, "Enter notification's name ...", Toast.LENGTH_SHORT).show()
+            binding.txtName.error = null
+        }
+
+        if (!datetime.isAfter(LocalDateTime.now())) {
+            Toast.makeText(
+                requireContext(), "Đã qua thời gian được chọn...", Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        notif?.let {
+            viewModel.update(
+                it.copy(name = title, notes = content, time = datetime, isLoop = isLoop)
+            )
+            findNavControllerSafely()?.navigateUp()
         }
     }
 
-    /**
-     * This function is used to update a notification
-     */
-    private fun updateNotification() {
-        if(validNotificationEntry()) {
-            viewModel.updateNotification(
-                args.notificationId,
-                binding.txtName.text.toString(),
-                binding.txtContent.text.toString(),
-                binding.day.text.toString(),
-                binding.time.text.toString(),
-                binding.loopOption.text.toString()
-            )
-            // Navigate to NotificationFragment
-            val action =
-                AddNotificationFragmentDirections.actionAddNotificationFragmentToNotificationFragment()
-            findNavControllerSafely()?.navigate(action)
+    private fun create() {
+        val title = binding.txtName.text?.toString()?.trim()
+        val content = binding.txtContent.text.toString().trim()
+        val isLoop = binding.loopOption.isChecked
+
+        if (title.isNullOrEmpty()) {
+            binding.txtName.error = "Không được để trống!!!"
+            return
         } else {
-            Toast.makeText(context, "Enter notification's name ...", Toast.LENGTH_SHORT).show()
+            binding.txtName.error = null
         }
+
+        if (!datetime.isAfter(LocalDateTime.now())) {
+            Toast.makeText(
+                requireContext(), "Đã qua thời gian được chọn...", Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        viewModel.create(title, content, datetime, isLoop)
+        findNavControllerSafely()?.navigateUp()
     }
 }

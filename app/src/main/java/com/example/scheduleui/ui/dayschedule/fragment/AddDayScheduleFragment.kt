@@ -7,23 +7,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import com.example.scheduleui.R
-import com.example.scheduleui.data.ScheduleApplication
-import com.example.scheduleui.data.Subject
+import com.example.scheduleui.ScheduleApplication
+import com.example.scheduleui.data.localdatabase.SettingPreferences
+import com.example.scheduleui.data.model.Subject
+import com.example.scheduleui.data.repository.NotifRepository
+import com.example.scheduleui.data.repository.SubjectRepository
 import com.example.scheduleui.databinding.FragmentAddDayScheduleBinding
-import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModel
-import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModelFactory
+import com.example.scheduleui.ui.DayScheduleViewModel
+import com.example.scheduleui.ui.DayScheduleViewModelFactory
 import com.example.scheduleui.util.findNavControllerSafely
-import com.example.scheduleui.util.formatDayScheduleDate
-import com.example.scheduleui.util.formatDayScheduleTime
-import com.example.scheduleui.util.getDateFromString
-import com.example.scheduleui.util.getTimeFromTimeString
-import com.example.scheduleui.util.setDefaultTime
-import java.util.Calendar
+import com.example.scheduleui.util.format
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 class AddDayScheduleFragment : Fragment() {
     // Argument of AddDayScheduleFragment in nav_graph
@@ -31,43 +36,136 @@ class AddDayScheduleFragment : Fragment() {
 
     // Binding to view FragmentAddDaySchedule
     private lateinit var binding: FragmentAddDayScheduleBinding
-    private var targetDay: Calendar? = null
 
-    // Wait time for add day schedule
-    private var isWaitTime = false
+    private var timeStart: LocalTime = LocalTime.now()
         set(value) {
             field = value
-            if (value) {
-                checkAutoAddCompleted(targetDay ?: Calendar.getInstance().setDefaultTime())
-                Toast.makeText(context, "Wait a few seconds ...", Toast.LENGTH_SHORT).show()
+            if (!field.isBefore(timeEnd)) {
+                timeEnd = field.plusHours(1)
             }
-            if (isWaitTime) {
-                binding.btnDayStart.isEnabled = false
-                binding.btnDayEnd.isEnabled = false
+            binding.btnTimeStart.text = timeStart.format("HH:mm")
+        }
+    private var timeEnd: LocalTime = timeStart.plusHours(1)
+        set(value) {
+            if (value.isAfter(timeStart)) {
+                field = value
+                binding.btnTimeEnd.text = timeEnd.format("HH:mm")
             } else {
-                binding.btnDayStart.isEnabled = true
-                binding.btnDayEnd.isEnabled = true
+                Toast.makeText(
+                    requireContext(),
+                    "Thời gian kết thúc phải sau thời gian bắt đầu!!!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
+
+    private var dateStart: LocalDate = LocalDate.now()
+        set(value) {
+            field = value
+            if (field.isAfter(dateEnd)) {
+                dateEnd = field
+            }
+            binding.btnDayStart.text = field.format("cccc, dd/MM/yyyy")
+        }
+    private var dateEnd: LocalDate = dateStart
+        set(value) {
+            if (!value.isBefore(dateStart)) {
+                field = value
+                binding.btnDayEnd.text = dateEnd.format("cccc, dd/MM/yyyy")
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Ngày kết thúc không thể trước ngày bắt đầu!!!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    private var weekDaysLoop = booleanArrayOf(false, false, false, false, false, false, false)
+        set(value) {
+            field = value
+            if (!field.contains(true)) {
+                binding.cbxLoop.isChecked = false
+                binding.btnDayEnd.isEnabled = false
+                binding.loopContent.visibility = View.GONE
+            } else if (binding.cbxLoop.isChecked) {
+                binding.loopContent.visibility = View.VISIBLE
+                binding.loopContent.text = String.format(
+                    getString(R.string.loopContentTemplate),
+                    field.mapIndexed { index, b ->
+                        if (b) {
+                            when (index) {
+                                1 -> DayOfWeek.MONDAY.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                )
+
+                                2 -> DayOfWeek.TUESDAY.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                )
+
+                                3 -> DayOfWeek.WEDNESDAY.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                )
+
+                                4 -> DayOfWeek.THURSDAY.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                )
+
+                                5 -> DayOfWeek.FRIDAY.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                )
+
+                                6 -> DayOfWeek.SATURDAY.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                )
+
+                                else -> DayOfWeek.SUNDAY.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                )
+                            }
+                        } else null
+                    }.filterNotNull().joinToString(", "),
+                    timeStart.format("HH:mm"),
+                    timeEnd.format("HH:mm"),
+                    dateStart.format("dd/MM/yyyy"),
+                    dateEnd.format("dd/MM/yyyy")
+                )
+            }
+        }
+
+    private var subject: Subject? = null
 
     // View model
     private val viewModel: DayScheduleViewModel by activityViewModels {
         DayScheduleViewModelFactory(
-            (activity?.application as ScheduleApplication).database.scheduleDao()
+            SubjectRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            NotifRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            SettingPreferences(requireContext())
         )
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentAddDayScheduleBinding.inflate(inflater, container, false)
 
         // Setup toolbar
         setupToolbar()
-        // Load fragment
-        loadFragment()
+
+        if (args.subjectId != -1) {
+            binding.btnDayEnd.visibility = View.GONE
+            binding.loopTitle.visibility = View.GONE
+            binding.cbxLoop.visibility = View.GONE
+            binding.line2.visibility = View.GONE
+        }
 
         return binding.root
     }
@@ -75,8 +173,116 @@ class AddDayScheduleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Load content
-        loadContent()
+        if (args.subjectId != -1) {
+            viewModel.getSubjectById(args.subjectId).observe(this.viewLifecycleOwner) { subject ->
+                this.subject = subject
+                with(subject) {
+                    binding.txtName.setText(name)
+                    this@AddDayScheduleFragment.timeStart = timeStart
+                    this@AddDayScheduleFragment.timeEnd = timeEnd
+                    this@AddDayScheduleFragment.dateStart = date
+                    binding.txtTeacher.setText(teacher)
+                    binding.txtLocation.setText(location)
+                    binding.txtNotes.setText(notes)
+                }
+            }
+        } else {
+            if (!args.date.isNullOrEmpty()) {
+                dateStart = LocalDate.parse(
+                    args.date, DateTimeFormatter.ISO_LOCAL_DATE
+                )
+                dateEnd = dateStart
+            }
+
+            setUpBtnTime()
+            setUpBtnDate()
+            setUpLoopOption()
+        }
+    }
+
+    private fun setUpLoopOption() {
+        binding.cbxLoop.setOnClickListener {
+            binding.btnDayEnd.isEnabled = binding.cbxLoop.isChecked
+            if (!binding.cbxLoop.isChecked) {
+                weekDaysLoop = booleanArrayOf(false, false, false, false, false, false, false)
+            } else {
+                if (!weekDaysLoop.contains(true)) {
+                    weekDaysLoop[dateStart.dayOfWeek.value % 7] = true
+                }
+
+                val itemsSelected = weekDaysLoop
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Lựa chọn lặp")
+                    .setMultiChoiceItems(
+                        resources.getStringArray(R.array.dayOfWeeks),
+                        itemsSelected
+                    ) { _, i, isChecked ->
+                        itemsSelected[i] = isChecked
+                    }
+                    .setPositiveButton("Xác nhận") { _, _ ->
+                        weekDaysLoop = itemsSelected
+                    }
+                    .setNegativeButton("Quay lại") { _, _ ->
+                        binding.cbxLoop.isChecked = false
+                        weekDaysLoop =
+                            booleanArrayOf(false, false, false, false, false, false, false)
+                    }
+                    .create()
+                    .show()
+            }
+        }
+    }
+
+    private fun setUpBtnDate() {
+        binding.btnDayStart.text = dateStart.format("cccc, dd/MM/yyyy")
+        binding.btnDayStart.setOnClickListener {
+
+            val datePickerDialog = DatePickerDialog(
+                requireContext(), { datePicker, _, _, _ ->
+                    dateStart =
+                        LocalDate.of(datePicker.year, datePicker.month + 1, datePicker.dayOfMonth)
+                }, dateStart.year, dateStart.monthValue - 1, dateStart.dayOfMonth
+            )
+            datePickerDialog.create()
+            datePickerDialog.show()
+        }
+
+        binding.btnDayEnd.text = dateEnd.format("cccc, dd/MM/yyyy")
+        binding.btnDayEnd.isEnabled = false
+        binding.btnDayEnd.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                requireContext(), { datePicker, _, _, _ ->
+                    dateEnd =
+                        LocalDate.of(datePicker.year, datePicker.month + 1, datePicker.dayOfMonth)
+                }, dateEnd.year, dateEnd.monthValue - 1, dateEnd.dayOfMonth
+            )
+            datePickerDialog.create()
+            datePickerDialog.show()
+        }
+    }
+
+    private fun setUpBtnTime() {
+        binding.btnTimeStart.text = timeStart.format("HH:mm")
+        binding.btnTimeStart.setOnClickListener {
+            val timePickerDialog = TimePickerDialog(
+                requireContext(), { timePicker, _, _ ->
+                    timeStart = LocalTime.of(timePicker.hour, timePicker.minute)
+                }, timeStart.hour, timeStart.minute, true
+            )
+            timePickerDialog.create()
+            timePickerDialog.show()
+        }
+
+        binding.btnTimeEnd.text = timeEnd.format("HH:mm")
+        binding.btnTimeEnd.setOnClickListener {
+            val timePickerDialog = TimePickerDialog(
+                requireContext(), { timePicker, _, _ ->
+                    timeEnd = LocalTime.of(timePicker.hour, timePicker.minute)
+                }, timeEnd.hour, timeEnd.minute, true
+            )
+            timePickerDialog.create()
+            timePickerDialog.show()
+        }
     }
 
     /**
@@ -94,10 +300,10 @@ class AddDayScheduleFragment : Fragment() {
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.saveMenuItem -> {
-                    if(args.subjectId != -1) {
-                        updateSubject()
+                    if (args.subjectId != -1) {
+                        update()
                     } else {
-                        addNewSubjects()
+                        create()
                     }
                     true
                 }
@@ -107,382 +313,77 @@ class AddDayScheduleFragment : Fragment() {
         }
     }
 
-    /**
-     * This function is used to load add fragment or edit fragment
-     *
-     */
-    private fun loadFragment() {
+    private fun create() {
+        val name = binding.txtName.text?.toString()?.trim()
+        val teacher = binding.txtTeacher.text.toString().trim()
+        val location = binding.txtLocation.text.toString().trim()
+        val notes = binding.txtNotes.text.toString().trim()
 
-        // Setup event btnTimeStart click
-        binding.btnTimeStart.setOnClickListener {
-            // Get current time start
-            val currentTime = binding.btnTimeStart.text.toString().getTimeFromTimeString()
-            // Initialize time picker dialog
-            val timePickerDialog = TimePickerDialog(
-                requireContext(),
-                { _, hourOfDay, minute ->
-                    // Event choose time start
-                    binding.btnTimeStart.text =
-                        Calendar.Builder().setTimeOfDay(hourOfDay, minute, 0).build()
-                            .formatDayScheduleTime()
-
-                    // If timeEnd <= timeStart, set timeEnd = timeStart + 60m
-                    val timeStart = binding.btnTimeStart.text.toString().getTimeFromTimeString()
-                    val timeEnd = binding.btnTimeEnd.text.toString().getTimeFromTimeString()
-                    if (!viewModel.validTimeEntry(timeStart, timeEnd)) {
-                        binding.btnTimeEnd.text = Calendar.Builder()
-                            .setInstant(timeStart.timeInMillis + DayScheduleViewModel.DAY_TO_MILLIS / 24)
-                            .build().formatDayScheduleTime()
-                    }
-                },
-                currentTime.get(Calendar.HOUR_OF_DAY),
-                currentTime.get(Calendar.MINUTE),
-                true
-            )
-            // Show time picker dialog
-            timePickerDialog.show()
-        }
-
-        // Setup event btnTimeEnd click
-        binding.btnTimeEnd.setOnClickListener {
-            // Get current time end
-            val currentTime = binding.btnTimeEnd.text.toString().getTimeFromTimeString()
-            // Initialize time picker dialog
-            val timePickerDialog = TimePickerDialog(
-                requireContext(),
-                { _, hourOfDay, minute ->
-                    // Event choose time end
-                    binding.btnTimeEnd.text =
-                        Calendar.Builder().setTimeOfDay(hourOfDay, minute, 0).build()
-                            .formatDayScheduleTime()
-
-                    // If timeEnd <= timeStart, set timeEnd = timeStart + 60m
-                    val timeStart = binding.btnTimeStart.text.toString().getTimeFromTimeString()
-                    val timeEnd = binding.btnTimeEnd.text.toString().getTimeFromTimeString()
-                    if (!viewModel.validTimeEntry(timeStart, timeEnd)) {
-                        binding.btnTimeEnd.text = Calendar.Builder()
-                            .setInstant(timeStart.timeInMillis + DayScheduleViewModel.DAY_TO_MILLIS / 24)
-                            .build().formatDayScheduleTime()
-                    }
-                },
-                currentTime.get(Calendar.HOUR_OF_DAY),
-                currentTime.get(Calendar.MINUTE),
-                true
-            )
-            // Show time picker dialog
-            timePickerDialog.show()
-        }
-
-        // Setup event btnDayStart click
-        binding.btnDayStart.setOnClickListener {
-            // Get current day start
-            val currentDate = binding.btnDayStart.text.toString().getDateFromString()
-            // Initialize date picker dialog
-            val datePickerDialog = DatePickerDialog(
-                requireContext(),
-                { _, year, month, dayOfMonth ->
-                    // Event choose date start
-                    binding.btnDayStart.text =
-                        Calendar.Builder().setDate(year, month, dayOfMonth).build()
-                            .formatDayScheduleDate()
-
-                    // If dayEnd < dayStart, set dayEnd = dayStart
-                    if (!viewModel.validDateEntry(
-                            binding.btnDayStart.text.toString().getDateFromString(),
-                            binding.btnDayEnd.text.toString().getDateFromString()
-                        )
-                    ) {
-                        binding.btnDayEnd.text = binding.btnDayStart.text
-                    }
-
-                    isWaitTime = true
-                    targetDay = binding.btnDayStart.text.toString().getDateFromString()
-                },
-                currentDate.get(Calendar.YEAR),
-                currentDate.get(Calendar.MONTH),
-                currentDate.get(Calendar.DAY_OF_MONTH)
-            )
-            // Show date picker dialog
-            datePickerDialog.show()
-
-
-        }
-
-        // Setup event btnDayEnd click
-        binding.btnDayEnd.setOnClickListener {
-            // Get current day end
-            val currentDate = binding.btnDayEnd.text.toString().getDateFromString()
-            // Initialize date picker dialog
-            val datePickerDialog = DatePickerDialog(
-                requireContext(),
-                { _, year, month, dayOfMonth ->
-                    // Event choose date end
-                    binding.btnDayEnd.text =
-                        Calendar.Builder().setDate(year, month, dayOfMonth).build()
-                            .formatDayScheduleDate()
-
-                    // If dayEnd < dayStart, set dayEnd = dayStart
-                    if (!viewModel.validDateEntry(
-                            binding.btnDayStart.text.toString().getDateFromString(),
-                            binding.btnDayEnd.text.toString().getDateFromString()
-                        )
-                    ) {
-                        binding.btnDayEnd.text = binding.btnDayStart.text
-                    }
-
-                    isWaitTime = true
-                    targetDay = binding.btnDayEnd.text.toString().getDateFromString()
-                },
-                currentDate.get(Calendar.YEAR),
-                currentDate.get(Calendar.MONTH),
-                currentDate.get(Calendar.DAY_OF_MONTH)
-            )
-            // Show date picker dialog
-            datePickerDialog.show()
-        }
-
-        // Set up loop
-        setupLoop()
-    }
-
-    /**
-     * This function is used to load content of this fragment
-     */
-    private fun loadContent() {
-        if (args.subjectId != -1) {
-            // Load edit fragment
-            viewModel.getSubjectById(args.subjectId).observe(this.viewLifecycleOwner) { subject ->
-                loadEditFragment(subject)
-            }
+        if (name.isNullOrEmpty()) {
+            binding.txtName.error = "Không được để trống!"
+            return
         } else {
-            // Load add fragment
-            // Set btnDayStart, btnDayEnd
-            binding.btnDayStart.text =
-                args.date.ifEmpty { Calendar.getInstance().formatDayScheduleDate() }
-            binding.btnDayEnd.text =
-                args.date.ifEmpty { Calendar.getInstance().formatDayScheduleDate() }
-            //Set btnTimeStart, btnTimeEnd
-            binding.btnTimeStart.text = Calendar.getInstance().formatDayScheduleTime()
-            binding.btnTimeEnd.text =
-                Calendar.Builder()
-                    .setInstant(Calendar.getInstance().timeInMillis + DayScheduleViewModel.DAY_TO_MILLIS / 24)
-                    .build()
-                    .formatDayScheduleTime()
+            binding.txtName.error = null
         }
-    }
 
-    /**
-     * This function is used to set up loop content when has a check box changed
-     */
-    private fun setupLoop() {
-        binding.cbxCN.setOnClickListener {
-            setupDisplayLoopContent()
+        if (!timeEnd.isAfter(timeStart)) {
+            Toast.makeText(
+                requireContext(),
+                "Thời gian kết thúc phải sau thời gian bắt đầu!!!",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
         }
-        binding.cbxT2.setOnClickListener {
-            setupDisplayLoopContent()
-        }
-        binding.cbxT3.setOnClickListener {
-            setupDisplayLoopContent()
-        }
-        binding.cbxT4.setOnClickListener {
-            setupDisplayLoopContent()
-        }
-        binding.cbxT5.setOnClickListener {
-            setupDisplayLoopContent()
-        }
-        binding.cbxT6.setOnClickListener {
-            setupDisplayLoopContent()
-        }
-        binding.cbxT7.setOnClickListener {
-            setupDisplayLoopContent()
-        }
-    }
 
-    /**
-     * This function is used to check this subject has looped
-     */
-    private fun getDayOfWeeksLoop(): String {
-        val dayOfWeeksLoop = mutableListOf<Int>()
-
-        if (binding.cbxCN.isChecked) dayOfWeeksLoop.add(0)
-        if (binding.cbxT2.isChecked) dayOfWeeksLoop.add(1)
-        if (binding.cbxT3.isChecked) dayOfWeeksLoop.add(2)
-        if (binding.cbxT4.isChecked) dayOfWeeksLoop.add(3)
-        if (binding.cbxT5.isChecked) dayOfWeeksLoop.add(4)
-        if (binding.cbxT6.isChecked) dayOfWeeksLoop.add(5)
-        if (binding.cbxT7.isChecked) dayOfWeeksLoop.add(6)
-
-        return dayOfWeeksLoop.joinToString(", ")
-    }
-
-    /**
-     * This function is used to set up loop content display in screen
-     */
-    private fun setupDisplayLoopContent() {
-        val dayOfWeeks = getDayOfWeeksLoop().split(", ").map {
-            resources.getStringArray(R.array.dayOfWeeks)[it.toInt()]
-        }.joinToString(", ")
-
-        if (dayOfWeeks.isEmpty()) {
-            binding.loopContent.visibility = View.GONE
-        } else {
-            binding.loopContent.text = String.format(
-                getString(R.string.loopContentTemplate),
-                dayOfWeeks,
-                binding.btnTimeStart.text.toString(),
-                binding.btnTimeEnd.text.toString(),
-                binding.btnDayStart.text.toString(),
-                binding.btnDayEnd.text.toString(),
-            )
-            binding.loopContent.visibility = View.VISIBLE
-        }
-    }
-
-    /**
-     * This function is used to set loop content for a subject
-     */
-    private fun setLoopContent(): String {
-        // Get dayOfWeeks, this subject loop
-        val dayOfWeeks = getDayOfWeeksLoop()
-
-        return if (dayOfWeeks.isEmpty()) {
-            ""
-        } else {
-            // Format loop content
-            String.format(
-                "%s-%s-%s",
-                dayOfWeeks,
-                binding.btnDayStart.text.toString(),
-                binding.btnDayEnd.text.toString(),
-            )
-        }
-    }
-
-    /**
-     * This function is used to valid subject entry
-     */
-    private fun isEntryValid(): Boolean {
-        return viewModel.isEntryValid(binding.txtName.text.toString())
-    }
-
-    /**
-     * This function is used to add new a subject without loop content
-     */
-    private fun addNewASubject() {
-        viewModel.addNewASubject(
-            binding.txtName.text.toString(),
-            binding.btnTimeStart.text.toString(),
-            binding.btnTimeEnd.text.toString(),
-            binding.txtLocation.text.toString(),
-            binding.txtTeacher.text.toString(),
-            binding.txtNotes.text.toString(),
-            binding.loopContent.text.toString(),
-            binding.btnDayStart.text.toString()
+        viewModel.insert(
+            name,
+            timeStart,
+            timeEnd,
+            dateStart,
+            dateEnd,
+            teacher,
+            location,
+            notes,
+            weekDaysLoop
         )
+        findNavControllerSafely()?.navigateUp()
     }
 
-    /**
-     * This function is used to add new subjects with the same loop content,
-     * or add new a subject without loop content
-     *
-     */
-    private fun addNewSubjects() {
-        if (isEntryValid()) {
-            // Check this subject loop?
-            if (binding.loopContent.visibility == View.GONE) { // Don't loop
-                // Add new a subject
-                addNewASubject()
-            } else if (binding.loopContent.visibility == View.VISIBLE) { // Loop
-                viewModel.addNewSubjects(
-                    binding.txtName.text.toString(),
-                    binding.btnTimeStart.text.toString(),
-                    binding.btnTimeEnd.text.toString(),
-                    binding.txtLocation.text.toString(),
-                    binding.txtTeacher.text.toString(),
-                    binding.txtNotes.text.toString(),
-                    setLoopContent(),
-                    binding.btnDayStart.text.toString(),
-                    binding.btnDayEnd.text.toString()
-                )
-            }
-            // Navigate to DayScheduleListFragment
-            val action =
-                AddDayScheduleFragmentDirections.actionAddDayScheduleFragmentToDayScheduleListFragment()
-            findNavControllerSafely()?.navigate(action)
+    private fun update() {
+        val name = binding.txtName.text?.toString()?.trim()
+        val teacher = binding.txtTeacher.text.toString().trim()
+        val location = binding.txtLocation.text.toString().trim()
+        val notes = binding.txtNotes.text.toString().trim()
+
+        if (name.isNullOrEmpty()) {
+            binding.txtName.error = "Không được để trống!"
+            return
         } else {
-            Toast.makeText(context, "Entry subject name!", Toast.LENGTH_SHORT).show()
+            binding.txtName.error = null
         }
-    }
 
-    /**
-     * This function is used to check "auto add day schedule is completed?"
-     */
-    private fun checkAutoAddCompleted(targetDay: Calendar) {
-        viewModel.daySchedules.observe(this.viewLifecycleOwner) { daySchedules ->
-            if (isWaitTime) {
-                // Check auto add completed?
-                isWaitTime = !viewModel.checkAutoAddDayCompleted(
-                    daySchedules,
-                    targetDay
+        if (!timeEnd.isAfter(timeStart)) {
+            Toast.makeText(
+                requireContext(),
+                "Thời gian kết thúc phải sau thời gian bắt đầu!!!",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        subject?.let {
+            viewModel.update(
+                it.copy(
+                    name = name,
+                    timeStart = timeStart,
+                    timeEnd = timeEnd,
+                    date = dateStart,
+                    location = location,
+                    teacher = teacher,
+                    notes = notes
                 )
-            }
-        }
-    }
-
-    /**
-     * This function is used to load edit fragment
-     */
-    private fun loadEditFragment(subject: Subject) {
-        // Set subject name
-        binding.txtName.setText(subject.name)
-        // Set timeStart, timeEnd
-        binding.btnTimeStart.text = subject.timeStart.formatDayScheduleTime()
-        binding.btnTimeEnd.text = subject.timeEnd.formatDayScheduleTime()
-        // Set txtLocation, txtTeacher, txtNotes
-        binding.txtLocation.setText(subject.location)
-        binding.txtTeacher.setText(subject.teacher)
-        binding.txtNotes.setText(subject.notes)
-        // Set day
-        viewModel.daySchedules.observe(this.viewLifecycleOwner) { daySchedules ->
-            binding.btnDayStart.text = daySchedules.find {
-                it.id == subject.dayScheduleId
-            }?.day?.formatDayScheduleDate() ?: ""
-        }
-        // You can't edit day have this subject
-        binding.btnDayStart.isEnabled = false
-        binding.btnDayEnd.visibility = View.GONE
-
-        // After subjects was saved in local database, they will become different subjects,
-        // so don't edit loop content of them
-        binding.loopTitle.visibility = View.GONE
-        binding.dayLoopLayout.visibility = View.GONE
-        binding.line3.visibility = View.GONE
-    }
-
-    /**
-     * This function is used to update a subject
-     */
-    private fun updateSubject() {
-        if(isEntryValid()) {
-            // Update subject
-            viewModel.updateSubject(
-                args.subjectId,
-                binding.txtName.text.toString(),
-                binding.btnTimeStart.text.toString(),
-                binding.btnTimeEnd.text.toString(),
-                binding.txtLocation.text.toString(),
-                binding.txtTeacher.text.toString(),
-                binding.txtNotes.text.toString(),
-                binding.loopContent.text.toString(),
-                binding.btnDayStart.text.toString()
             )
-
-            // Navigate to DayScheduleListFragment
-            val action =
-                AddDayScheduleFragmentDirections.actionAddDayScheduleFragmentToDayScheduleListFragment()
-            findNavControllerSafely()?.navigate(action)
-        } else {
-            Toast.makeText(context, "Entry subject name!", Toast.LENGTH_SHORT).show()
-        }
+            findNavControllerSafely()?.navigateUp()
+        } ?: Toast.makeText(requireContext(), "Hiện có lỗi xảy ra...", Toast.LENGTH_SHORT).show()
     }
 }

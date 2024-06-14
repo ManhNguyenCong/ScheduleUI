@@ -9,19 +9,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.scheduleui.R
-import com.example.scheduleui.data.DaySchedule
+import com.example.scheduleui.data.model.DaySchedule
 import com.example.scheduleui.databinding.DayScheduleItemBinding
-import com.example.scheduleui.util.formatDayScheduleDate
+import com.example.scheduleui.util.format
+import java.time.LocalDate
 
 class DayScheduleAdapter(
     private val context: Context,
     private val addSubject: (String) -> Unit,
-    private val submitListSubjects: (SubjectAdapter, Int, View) -> Unit,
     private val showDetailSubject: (Int) -> Unit
-) :
-    ListAdapter<DaySchedule, DayScheduleAdapter.DayScheduleViewHolder>(
-        DiffCallback
-    ) {
+) : ListAdapter<DaySchedule, DayScheduleAdapter.DayScheduleViewHolder>(DiffCallback) {
 
     class DayScheduleViewHolder(private val binding: DayScheduleItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -33,24 +30,36 @@ class DayScheduleAdapter(
             context: Context,
             daySchedule: DaySchedule,
             addSubject: (String) -> Unit,
-            submitListSubjects: (SubjectAdapter, Int, View) -> Unit,
-            showDetailSubject: (Int) -> Unit,
+            showDetailSubject: (Int) -> Unit
         ) {
             // Set date
-            binding.day.text = daySchedule.day.formatDayScheduleDate()
+            if (daySchedule.date.isEqual(LocalDate.now())) {
+                binding.day.setBackgroundColor(context.getColor(R.color.blueBFE1FB))
+                binding.day.text = context.getString(R.string.today)
+            } else {
+                binding.day.text = daySchedule.date.format("ccc, dd/MM/yyyy")
+            }
+
             // Event add subject
             binding.day.setOnClickListener {
-                addSubject(daySchedule.day.formatDayScheduleDate())
+                addSubject(daySchedule.date.format(pattern = null))
             }
 
             // Init subjectAdapter
             val subjectAdapter = SubjectAdapter(showDetailSubject)
-            // Submit list subject in this day
-            submitListSubjects(subjectAdapter, daySchedule.id, binding.hasSubject)
             // Set adapter for recycler view subject
             binding.SubjectList.adapter = subjectAdapter
             //Set layout manager for recycler view subject
             binding.SubjectList.layoutManager = LinearLayoutManager(context)
+
+            // Submit list subject in this day
+            if (daySchedule.subjects.isNullOrEmpty()) {
+                binding.hasSubject.visibility = View.VISIBLE
+                subjectAdapter.submitList(null)
+            } else {
+                binding.hasSubject.visibility = View.GONE
+                subjectAdapter.submitList(daySchedule.subjects)
+            }
         }
     }
 
@@ -65,22 +74,18 @@ class DayScheduleAdapter(
 
     override fun onBindViewHolder(holder: DayScheduleViewHolder, position: Int) {
         holder.bind(
-            context,
-            getItem(position),
-            addSubject,
-            submitListSubjects,
-            showDetailSubject
+            context, getItem(position), addSubject, showDetailSubject
         )
     }
 
     companion object {
         val DiffCallback = object : DiffUtil.ItemCallback<DaySchedule>() {
             override fun areItemsTheSame(oldItem: DaySchedule, newItem: DaySchedule): Boolean {
-                return oldItem.id == newItem.id
+                return oldItem.date == newItem.date
             }
 
             override fun areContentsTheSame(oldItem: DaySchedule, newItem: DaySchedule): Boolean {
-                return oldItem.day == newItem.day
+                return oldItem.subjects?.joinToString() == newItem.subjects?.joinToString()
             }
         }
     }

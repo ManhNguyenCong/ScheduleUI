@@ -16,9 +16,6 @@
         <action
             android:id="@+id/action_dayScheduleListFragment_to_detailDayScheduleFragment"
             app:destination="@id/detailDayScheduleFragment" />
-        <action
-            android:id="@+id/action_dayScheduleListFragment_to_addNotificationFragment"
-            app:destination="@id/addNotificationFragment" />
     </fragment>
     <fragment
         android:id="@+id/addDayScheduleFragment"
@@ -33,27 +30,13 @@
             android:name="date"
             android:defaultValue=""
             app:argType="string"/>
-        <action
-            android:id="@+id/action_addDayScheduleFragment_to_dayScheduleListFragment"
-            app:destination="@id/dayScheduleListFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.example.scheduleui.ui.setting.fragment.SettingFragment"
         android:label="Thời khóa biểu"
         tools:layout="@layout/fragment_setting" />
-    <fragment
-        android:id="@+id/jobScheduleListFragment"
-        android:name="com.example.scheduleui.ui.jobschedulescreen.fragment.JobScheduleListFragment"
-        android:label="Lịch công việc"
-        tools:layout="@layout/fragment_job_schedule_list">
-        <action
-            android:id="@+id/action_jobScheduleListFragment_to_addJobScheduleFragment"
-            app:destination="@id/addJobScheduleFragment" />
-        <action
-            android:id="@+id/action_jobScheduleListFragment_to_detailJobScheduleFragment"
-            app:destination="@id/detailJobScheduleFragment" />
-    </fragment>
+
     <fragment
         android:id="@+id/notificationFragment"
         android:name="com.example.scheduleui.ui.notification.fragment.NotificationFragment"
@@ -74,9 +57,6 @@
         <action
             android:id="@+id/action_detailDayScheduleFragment_to_addDayScheduleFragment"
             app:destination="@id/addDayScheduleFragment" />
-        <action
-            android:id="@+id/action_detailDayScheduleFragment_to_dayScheduleListFragment"
-            app:destination="@id/dayScheduleListFragment" />
     </fragment>
     <fragment
         android:id="@+id/addNotificationFragment"
@@ -91,37 +71,5 @@
             android:name="notificationId"
             app:argType="integer"
             android:defaultValue="-1"/>
-    </fragment>
-    <fragment
-        android:id="@+id/addJobScheduleFragment"
-        android:name="com.example.scheduleui.ui.jobschedulescreen.fragment.AddJobScheduleFragment"
-        android:label=""
-        tools:layout="@layout/fragment_add_job_schedule" >
-        <action
-            android:id="@+id/action_addJobScheduleFragment_to_jobScheduleListFragment"
-            app:destination="@id/jobScheduleListFragment" />
-        <argument
-            android:name="dayScheduleId"
-            android:defaultValue="-1"
-            app:argType="integer"/>
-        <argument
-            android:name="jobScheduleId"
-            app:argType="integer"
-            android:defaultValue="-1"/>
-    </fragment>
-    <fragment
-        android:id="@+id/detailJobScheduleFragment"
-        android:name="com.example.scheduleui.ui.jobschedulescreen.fragment.DetailJobScheduleFragment"
-        android:label=""
-        tools:layout="@layout/fragment_detail_job_schedule" >
-        <action
-            android:id="@+id/action_detailJobScheduleFragment_to_jobScheduleListFragment"
-            app:destination="@id/jobScheduleListFragment" />
-        <argument
-            android:name="jobScheduleId"
-            app:argType="integer"/>
-        <action
-            android:id="@+id/action_detailJobScheduleFragment_to_addJobScheduleFragment"
-            app:destination="@id/addJobScheduleFragment" />
     </fragment>
 </navigation>

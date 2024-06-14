@@ -1,4 +1,4 @@
-package com.example.scheduleui
+package com.example.scheduleui.ui
 
 import android.os.Bundle
 import android.view.Menu
@@ -9,6 +9,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.scheduleui.R
 import com.example.scheduleui.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -28,8 +29,8 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.dayScheduleListFragment,
-                R.id.jobScheduleListFragment,
-                R.id.notificationFragment
+                R.id.notificationFragment,
+                R.id.settingFragment
             ),
             binding.drawerLayout
         )

@@ -9,14 +9,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import com.example.scheduleui.R
-import com.example.scheduleui.data.ScheduleApplication
-import com.example.scheduleui.data.Subject
+import com.example.scheduleui.ScheduleApplication
+import com.example.scheduleui.data.localdatabase.SettingPreferences
+import com.example.scheduleui.data.model.Subject
+import com.example.scheduleui.data.repository.NotifRepository
+import com.example.scheduleui.data.repository.SubjectRepository
 import com.example.scheduleui.databinding.FragmentDetailDayScheduleBinding
-import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModel
-import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModelFactory
+import com.example.scheduleui.ui.DayScheduleViewModel
+import com.example.scheduleui.ui.DayScheduleViewModelFactory
 import com.example.scheduleui.util.findNavControllerSafely
-import com.example.scheduleui.util.formatDayScheduleDate
-import com.example.scheduleui.util.formatDayScheduleTime
+import com.example.scheduleui.util.format
 
 class DetailDayScheduleFragment : Fragment() {
 
@@ -29,7 +31,9 @@ class DetailDayScheduleFragment : Fragment() {
     // DayScheduleViewModel
     private val viewModel: DayScheduleViewModel by activityViewModels {
         DayScheduleViewModelFactory(
-            (activity?.application as ScheduleApplication).database.scheduleDao()
+            SubjectRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            NotifRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            SettingPreferences(requireContext())
         )
     }
 
@@ -55,7 +59,7 @@ class DetailDayScheduleFragment : Fragment() {
         // Get and load subject information
         viewModel.getSubjectById(args.subjectId).observe(this.viewLifecycleOwner) {
             subject = it
-            loadSubjectInfor(subject)
+            bind(subject)
         }
     }
 
@@ -74,13 +78,8 @@ class DetailDayScheduleFragment : Fragment() {
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.deleteObjectMenuItem -> {
-                    // Delete subject
-                    deleteSubject(subject)
-                    // Navigate to dayScheduleListFragment
-                    val action =
-                        DetailDayScheduleFragmentDirections.actionDetailDayScheduleFragmentToDayScheduleListFragment()
-                    findNavControllerSafely()?.navigate(action)
-
+                    viewModel.delete(subject)
+                    findNavControllerSafely()?.navigateUp()
                     true
                 }
 
@@ -103,44 +102,18 @@ class DetailDayScheduleFragment : Fragment() {
      * This function is used to load subject information
      *
      */
-    private fun loadSubjectInfor(subject: Subject) {
+    private fun bind(subject: Subject) {
         // Set name subject
         binding.name.text = subject.name
         // Set day, time start and time end
-        viewModel.daySchedules.observe(this.viewLifecycleOwner) { daySchedules ->
-            binding.time.text = String.format(
-                "%s - %s\n%s",
-                subject.timeStart.formatDayScheduleTime(),
-                subject.timeEnd.formatDayScheduleTime(),
-                daySchedules.find { it.id == subject.dayScheduleId }?.day?.formatDayScheduleDate()
-            )
-        }
-        // Set location if it isn't empty
-        if (subject.location.isEmpty()) {
-            binding.location.visibility = View.GONE
-        } else {
-            binding.location.text = subject.location
-        }
-        // Set teacher if it isn't empty
-        if (subject.teacher.isEmpty()) {
-            binding.teacher.visibility = View.GONE
-        } else {
-            binding.teacher.text = subject.teacher
-        }
-        // Set notes if it isn't empty
-        if (subject.notes.isEmpty()) {
-            binding.notes.visibility = View.GONE
-        } else {
-            binding.notes.text = subject.notes
-        }
-    }
-
-    /**
-     * This function is used to delete a subject
-     *
-     * @param subject
-     */
-    private fun deleteSubject(subject: Subject) {
-        viewModel.deleteSubject(subject)
+        binding.time.text = String.format(
+            "%s - %s\n%s",
+            subject.timeStart.format("HH:mm"),
+            subject.timeEnd.format("HH:mm"),
+            subject.date.format("dd/MM/yyyy")
+        )
+        binding.location.text = subject.location
+        binding.teacher.text = subject.teacher
+        binding.notes.text = subject.notes
     }
 }
