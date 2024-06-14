@@ -23,19 +23,19 @@ interface ScheduleDao {
     fun getSubjectById(id: Int): Flow<Subject>
 
     @MapInfo(keyColumn = "date")
-    @Query("SELECT date, * FROM Subject WHERE date IN (:days) GROUP BY date")
+    @Query("SELECT date, * FROM Subject WHERE date IN (:days)")
     fun getSubjectsInDays(
         days: List<LocalDate>
-    ): Flow<Map<LocalDate, List<Subject>>>
+    ): Flow<List<Subject>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertSubject(subject: Subject)
+    suspend fun insert(subject: Subject)
 
     @Update
-    suspend fun updateSubject(subject: Subject)
+    suspend fun update(subject: Subject)
 
     @Delete
-    suspend fun deleteSubject(subject: Subject)
+    suspend fun delete(subject: Subject)
 
     //Notification
     @Query("SELECT * FROM Notification ORDER BY name")
@@ -45,11 +45,11 @@ interface ScheduleDao {
     fun getNotificationById(notificationId: Int): Flow<Notification>
 
     @Insert
-    suspend fun insertNotification(notification: Notification)
+    suspend fun insert(notification: Notification)
 
     @Update
-    suspend fun updateNotification(notification: Notification)
+    suspend fun update(notification: Notification)
 
     @Delete
-    suspend fun deleteNotification(notification: Notification)
+    suspend fun delete(notification: Notification)
 }

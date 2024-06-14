@@ -1,5 +1,6 @@
 package com.example.scheduleui.ui.dayschedule.fragment
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,14 +8,19 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LiveData
 import com.example.scheduleui.R
 import com.example.scheduleui.ScheduleApplication
+import com.example.scheduleui.data.localdatabase.SettingPreferences
+import com.example.scheduleui.data.model.DaySchedule
+import com.example.scheduleui.data.repository.NotifRepository
 import com.example.scheduleui.data.repository.SubjectRepository
 import com.example.scheduleui.databinding.FragmentDayScheduleListBinding
+import com.example.scheduleui.ui.DayScheduleViewModel
+import com.example.scheduleui.ui.DayScheduleViewModelFactory
 import com.example.scheduleui.ui.dayschedule.adapter.DayScheduleAdapter
-import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModel
-import com.example.scheduleui.ui.dayschedule.viewmodel.DayScheduleViewModelFactory
 import com.example.scheduleui.util.findNavControllerSafely
+import java.time.LocalDate
 
 
 class DayScheduleListFragment : Fragment() {
@@ -27,15 +33,17 @@ class DayScheduleListFragment : Fragment() {
     // View model
     private val dayScheduleViewModel: DayScheduleViewModel by activityViewModels {
         DayScheduleViewModelFactory(
-            SubjectRepository(
-                (activity?.application as ScheduleApplication).database.scheduleDao()
-            )
+            SubjectRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            NotifRepository((activity?.application as ScheduleApplication).database.scheduleDao()),
+            SettingPreferences(requireContext())
         )
     }
 
+    private var date: LocalDate = LocalDate.now()
+    private lateinit var ldSubjects: LiveData<List<DaySchedule>>
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentDayScheduleListBinding.inflate(inflater, container, false)
@@ -43,15 +51,19 @@ class DayScheduleListFragment : Fragment() {
         // Setup toolbar
         setupToolbar()
 
-        dayScheduleAdapter = DayScheduleAdapter(
-            requireContext(),
-            addSubject = {
-
-            },
-            showDetailSubject = {
-
-            }
-        )
+        dayScheduleAdapter = DayScheduleAdapter(requireContext(), addSubject = {
+            val action =
+                DayScheduleListFragmentDirections.actionDayScheduleListFragmentToAddDayScheduleFragment(
+                    date = it
+                )
+            findNavControllerSafely()?.navigate(action)
+        }, showDetailSubject = { subjectId ->
+            val action =
+                DayScheduleListFragmentDirections.actionDayScheduleListFragmentToDetailDayScheduleFragment(
+                    subjectId = subjectId
+                )
+            findNavControllerSafely()?.navigate(action)
+        })
         binding.rvDaySchedules.adapter = dayScheduleAdapter
 
         return binding.root
@@ -60,7 +72,27 @@ class DayScheduleListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        dayScheduleViewModel.getSubjectsInRecentDays().observe(this.viewLifecycleOwner) {
+        ldSubjects = dayScheduleViewModel.getSubjectsInRecentDays(date)
+        ldSubjects.observe(this.viewLifecycleOwner) {
+            dayScheduleAdapter?.submitList(it)
+        }
+
+        binding.btnBack.setOnClickListener {
+            date = date.plusDays(-7)
+            loadSchedule(date)
+        }
+
+        binding.btnNext.setOnClickListener {
+            date = date.plusDays(7)
+            loadSchedule(date)
+        }
+    }
+
+    private fun loadSchedule(date: LocalDate) {
+        ldSubjects.removeObservers(this.viewLifecycleOwner)
+        ldSubjects = dayScheduleViewModel.getSubjectsInRecentDays(date)
+        ldSubjects.observe(this.viewLifecycleOwner) {
+            dayScheduleAdapter?.submitList(null)
             dayScheduleAdapter?.submitList(it)
         }
     }
@@ -81,17 +113,29 @@ class DayScheduleListFragment : Fragment() {
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.comeBackMenuItem -> {
-                    // TODO Scroll to today
+                    date = LocalDate.now()
+                    loadSchedule(date)
                     true
                 }
 
                 R.id.refreshMenuItem -> {
-                    // TODO Refresh
+                    loadSchedule(date)
                     true
                 }
 
                 R.id.goToMenuItem -> {
-                    // TODO Go to a day
+                    val datePickerDialog = DatePickerDialog(
+                        requireContext(),
+                        { datePicker, _, _, _ ->
+                            date = LocalDate.of(datePicker.year, datePicker.month + 1, datePicker.dayOfMonth)
+                            loadSchedule(date)
+                        },
+                        date.year,
+                        date.monthValue - 1,
+                        date.dayOfMonth
+                    )
+                    datePickerDialog.create()
+                    datePickerDialog.show()
                     true
                 }
 

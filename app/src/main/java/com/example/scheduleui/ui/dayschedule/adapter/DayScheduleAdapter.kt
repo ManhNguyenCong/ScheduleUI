@@ -12,6 +12,7 @@ import com.example.scheduleui.R
 import com.example.scheduleui.data.model.DaySchedule
 import com.example.scheduleui.databinding.DayScheduleItemBinding
 import com.example.scheduleui.util.format
+import java.time.LocalDate
 
 class DayScheduleAdapter(
     private val context: Context,
@@ -32,10 +33,16 @@ class DayScheduleAdapter(
             showDetailSubject: (Int) -> Unit
         ) {
             // Set date
-            binding.day.text = daySchedule.date.format("ccc, dd/MM/yyyy")
+            if (daySchedule.date.isEqual(LocalDate.now())) {
+                binding.day.setBackgroundColor(context.getColor(R.color.blueBFE1FB))
+                binding.day.text = context.getString(R.string.today)
+            } else {
+                binding.day.text = daySchedule.date.format("ccc, dd/MM/yyyy")
+            }
+
             // Event add subject
             binding.day.setOnClickListener {
-                addSubject(daySchedule.date.format(null))
+                addSubject(daySchedule.date.format(pattern = null))
             }
 
             // Init subjectAdapter

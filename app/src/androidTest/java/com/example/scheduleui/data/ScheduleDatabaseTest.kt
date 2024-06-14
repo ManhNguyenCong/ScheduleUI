@@ -104,7 +104,7 @@ class ScheduleDatabaseTest : TestCase() {
             "Loop 1",
             daySchedules[0].id
         )
-        dao.insertSubject(subject)
+        dao.insert(subject)
         val result = dao.getAllSubjects().asLiveData().getOrAwaitValue()
 
         Assert.assertEquals(1, result.size)
@@ -130,7 +130,7 @@ class ScheduleDatabaseTest : TestCase() {
             "Loop 1",
             daySchedules[0].id
         )
-        dao.insertSubject(subject)
+        dao.insert(subject)
         var result = dao.getAllSubjects().asLiveData().getOrAwaitValue()
 
         val subjectUpdated = Subject(
@@ -144,7 +144,7 @@ class ScheduleDatabaseTest : TestCase() {
             "Loop",
             result[0].dayScheduleId
         )
-        dao.updateSubject(subjectUpdated)
+        dao.update(subjectUpdated)
         result = dao.getAllSubjects().asLiveData().getOrAwaitValue()
         Assert.assertEquals(1, result.size)
         Assert.assertEquals(subjectUpdated.name, result[0].name)
@@ -169,11 +169,11 @@ class ScheduleDatabaseTest : TestCase() {
             "Loop 1",
             daySchedules[0].id
         )
-        dao.insertSubject(subject)
+        dao.insert(subject)
         var result = dao.getAllSubjects().asLiveData().getOrAwaitValue()
 
         val subjectDeleted = result[0]
-        dao.deleteSubject(subjectDeleted)
+        dao.delete(subjectDeleted)
         result = dao.getAllSubjects().asLiveData().getOrAwaitValue()
         Assert.assertEquals(0, result.size)
     }

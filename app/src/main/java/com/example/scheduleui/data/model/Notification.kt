@@ -3,7 +3,7 @@ package com.example.scheduleui.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Calendar
+import java.time.LocalDateTime
 
 @Entity
 data class Notification(
@@ -14,7 +14,7 @@ data class Notification(
     @ColumnInfo(name = "notes")
     val notes: String,
     @ColumnInfo(name = "time")
-    val time: Calendar,
+    val time: LocalDateTime,
     @ColumnInfo(name = "loop")
     val isLoop: Boolean
 )

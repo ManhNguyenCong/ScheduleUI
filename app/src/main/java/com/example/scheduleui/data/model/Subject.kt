@@ -24,6 +24,4 @@ data class Subject(
     val teacher: String,
     @ColumnInfo(name = "notes")
     val notes: String,
-    @ColumnInfo(name = "loop")
-    val loop: String,
 )

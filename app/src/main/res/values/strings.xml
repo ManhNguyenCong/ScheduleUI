@@ -55,6 +55,9 @@
     <string name="nameSettingDefault">Not set</string>
     <string name="deleteMenuItemTitle">Xóa</string>
     <string name="editMenuItemTitle">Sửa</string>
+    <string name="before_7_days">7 ngày trước</string>
+    <string name="after_7_days">7 ngày sau</string>
+    <string name="today">Hôm nay</string>
 
     <!-- String array -->
     <string-array name="typeOfSchedule">

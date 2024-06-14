@@ -10,7 +10,7 @@ import com.example.scheduleui.data.model.Subject
 
 @Database(
     entities = [Notification::class, Subject::class],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(TypeDataConvert::class)

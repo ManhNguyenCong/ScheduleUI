@@ -2,23 +2,11 @@ package com.example.scheduleui.data.localdatabase
 
 import androidx.room.TypeConverter
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 
 class TypeDataConvert {
-
-    @TypeConverter
-    fun fromCalenderToLong(cal: Calendar?): Long? {
-        return cal?.timeInMillis
-    }
-
-    @TypeConverter
-    fun fromLongToCalender(value: Long?): Calendar? {
-        return value?.let {
-            Calendar.Builder().setInstant(value).build()
-        }
-    }
 
     @TypeConverter
     fun convertLocalDateToString(ld: LocalDate?): String? {
@@ -41,6 +29,18 @@ class TypeDataConvert {
     fun fromStringToLocalTime(value: String?): LocalTime? {
         return value?.let {
             LocalTime.parse(it, DateTimeFormatter.ISO_LOCAL_TIME)
+        }
+    }
+
+    @TypeConverter
+    fun convertLocalDateTimeToString(ldt: LocalDateTime?): String? {
+        return ldt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+    }
+
+    @TypeConverter
+    fun fromStringToLocalDateTime(value: String?): LocalDateTime? {
+        return value?.let {
+            LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         }
     }
 }

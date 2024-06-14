@@ -11,7 +11,6 @@
         android:layout_height="0dp"
         android:orientation="vertical"
         android:scrollbars="vertical"
-        android:paddingTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,7 +18,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:padding="16dp">
 
             <TextView
                 android:id="@+id/labelNameSetting"
@@ -36,6 +36,7 @@
                 style="@style/subSettingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="@string/nameSettingTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/labelNameSetting" />
@@ -45,6 +46,7 @@
                 style="@style/subSettingValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/nameTitle"
                 tools:text="Not set" />
@@ -54,6 +56,7 @@
                 style="@style/subSettingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="@string/schoolSettingTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/nameValue" />
@@ -63,6 +66,7 @@
                 style="@style/subSettingValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/schoolTitle"
                 tools:text="Not set" />
@@ -72,138 +76,32 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/schoolValue" />
 
-            <TextView
-                android:id="@+id/scheduleSetting"
-                style="@style/settingTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/navViewTitle"
-                app:drawableStartCompat="@drawable/baseline_menu_book_36"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/line1" />
-
-            <TextView
-                android:id="@+id/typeOfScheduleTitle"
-                style="@style/subSettingTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/typeOfScheduleTitle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/scheduleSetting" />
-
-            <TextView
-                android:id="@+id/typeOfScheduleValue"
-                style="@style/subSettingValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/typeOfScheduleTitle"
-                tools:text="Dòng thời gian" />
-
-            <TextView
-                android:id="@+id/warningTitle"
-                style="@style/subSettingTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/warnTitle"
-                android:textColor="@color/gray"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/typeOfScheduleValue" />
-
-            <TextView
-                android:id="@+id/warningValue"
-                style="@style/subSettingValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/warningValue"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/warningTitle" />
-
-            <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/line2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/warningValue" />
-
-            <TextView
-                android:id="@+id/expandSettingTitle"
-                style="@style/settingTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="64dp"
-                android:paddingEnd="8dp"
-                android:text="@string/expandSettingTitle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/line2" />
-
-            <TextView
-                android:id="@+id/typeOfDisplayTitle"
-                style="@style/subSettingTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/typeOfDisplayTitle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/expandSettingTitle" />
-
-            <TextView
-                android:id="@+id/typeOfDisplayValue"
-                style="@style/subSettingValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/typeOfDisplayTitle"
-                tools:text="Buổi sáng và buổi chiều" />
-
-            <TextView
-                android:id="@+id/displaySubjectTitle"
-                style="@style/subSettingTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/subjectDisplayTitle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/typeOfDisplayValue" />
-
-            <TextView
-                android:id="@+id/subjectDisplayValue"
-                style="@style/subSettingValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/displaySubjectTitle"
-                tools:text="Chiều ngang" />
-
-            <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/line3"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/subjectDisplayValue" />
 
             <TextView
                 android:id="@+id/widgetSetting"
                 style="@style/settingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="@string/widgetSettingTitle"
+                android:visibility="gone"
                 app:drawableStartCompat="@drawable/baseline_widgets_36"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/line3" />
+                app:layout_constraintTop_toBottomOf="@id/line1" />
 
             <TextView
                 android:id="@+id/opacityTitle"
                 style="@style/subSettingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="@string/TKB"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/widgetSetting" />
 
@@ -212,7 +110,9 @@
                 style="@style/subSettingValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="@string/opacitySetting"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/opacityTitle" />
 
@@ -220,9 +120,9 @@
                 android:id="@+id/opacityPercent"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="64dp"
+                android:layout_marginStart="56dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/opacityValue" />
@@ -232,17 +132,22 @@
                 style="@style/subSettingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="@string/widgetNoteTitle"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/opacityPercent" />
 
             <TextView
                 android:id="@+id/widgetNoteValue"
                 style="@style/subSettingValue"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:paddingBottom="100dp"
                 android:text="@string/widgetNoteValue"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/widgetNoteTitle" />
         </androidx.constraintlayout.widget.ConstraintLayout>
